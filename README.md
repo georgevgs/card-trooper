@@ -42,9 +42,9 @@ All commands are run from the root of the project, using a terminal:
 
 If you're interested in learning more about Astro, React, or Shadcn UI, here are some helpful links:
 
-- [Astro Documentation](https://docs.astro.build)
-- [React Documentation](https://reactjs.org/docs/getting-started.html)
-- [Shadcn UI Documentation](https://shadcn.dev/docs)
+- [Astro Documentation](https://docs.astro.build/en/getting-started/)
+- [React Documentation](https://react.dev/learn)
+- [Shadcn UI Documentation](https://ui.shadcn.com/docs)
 
 ## 🎉 Get Started
 
