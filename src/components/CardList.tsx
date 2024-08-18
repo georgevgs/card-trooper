@@ -19,7 +19,9 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import FullScreenCard from './FullScreenCard';
 
+// Separate type definitions
 type StoreCard = {
     id: string;
     storeName: string;
@@ -34,6 +36,7 @@ type CardListProps = {
 
 const CardList = ({ cards, setCards }: CardListProps) => {
     const [deleteCardId, setDeleteCardId] = useState<string | null>(null);
+    const [fullScreenCard, setFullScreenCard] = useState<StoreCard | null>(null);
 
     useEffect(() => {
         cards.forEach(card => {
@@ -53,34 +56,50 @@ const CardList = ({ cards, setCards }: CardListProps) => {
         setDeleteCardId(null);
     };
 
+    const handleCardClick = (card: StoreCard) => {
+        setFullScreenCard(card);
+    };
+
+    const handleCloseFullScreen = () => {
+        setFullScreenCard(null);
+    };
+
+    const renderCard = (card: StoreCard) => (
+      <Card
+        key={card.id}
+        className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+        onClick={() => handleCardClick(card)}
+      >
+          <div className="h-6" style={{ backgroundColor: card.color }} />
+          <CardContent className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">{card.storeName}</h2>
+                  <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
+                              <MoreVertical className="h-4 w-4" />
+                          </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                          <DropdownMenuItem onSelect={() => setDeleteCardId(card.id)}>
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              <span>Delete</span>
+                          </DropdownMenuItem>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+              </div>
+              <div className="flex justify-center mb-4">
+                  <svg id={`barcode-${card.id}`}></svg>
+              </div>
+          </CardContent>
+      </Card>
+    );
+
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cards.map(card => (
-            <Card key={card.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <div className="h-6" style={{ backgroundColor: card.color }} />
-                <CardContent className="p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">{card.storeName}</h2>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                    <MoreVertical className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={() => setDeleteCardId(card.id)}>
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    <span>Delete</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                    <div className="flex justify-center mb-4">
-                        <svg id={`barcode-${card.id}`}></svg>
-                    </div>
-                </CardContent>
-            </Card>
-          ))}
+      <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {cards.map(renderCard)}
+          </div>
           <AlertDialog open={!!deleteCardId} onOpenChange={() => setDeleteCardId(null)}>
               <AlertDialogContent>
                   <AlertDialogHeader>
@@ -97,7 +116,13 @@ const CardList = ({ cards, setCards }: CardListProps) => {
                   </AlertDialogFooter>
               </AlertDialogContent>
           </AlertDialog>
-      </div>
+          {fullScreenCard && (
+            <FullScreenCard
+              card={fullScreenCard}
+              onClose={handleCloseFullScreen}
+            />
+          )}
+      </>
     );
 };
 
