@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +16,10 @@ type StoreCard = {
   storeName: string;
   cardNumber: string;
   color: string;
+  isQRCode: boolean;
 };
 
-type MainPageProps = {};
-
-const MainPage = ({}: MainPageProps) => {
+const MainPage = () => {
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [cards, setCards] = useState<StoreCard[]>([]);
 
