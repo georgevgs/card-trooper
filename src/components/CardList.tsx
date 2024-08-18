@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Trash2 } from "lucide-react";
 import JsBarcode from 'jsbarcode';
+import QRCode from 'qrcode.react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -21,12 +22,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import FullScreenCard from './FullScreenCard';
 
-// Separate type definitions
 type StoreCard = {
     id: string;
     storeName: string;
     cardNumber: string;
     color: string;
+    isQRCode: boolean;
 };
 
 type CardListProps = {
@@ -37,15 +38,18 @@ type CardListProps = {
 const CardList = ({ cards, setCards }: CardListProps) => {
     const [deleteCardId, setDeleteCardId] = useState<string | null>(null);
     const [fullScreenCard, setFullScreenCard] = useState<StoreCard | null>(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     useEffect(() => {
         cards.forEach(card => {
-            JsBarcode(`#barcode-${card.id}`, card.cardNumber, {
-                format: "CODE128",
-                width: 2,
-                height: 100,
-                displayValue: true
-            });
+            if (!card.isQRCode) {
+                JsBarcode(`#barcode-${card.id}`, card.cardNumber, {
+                    format: "CODE128",
+                    width: 2,
+                    height: 100,
+                    displayValue: true
+                });
+            }
         });
     }, [cards]);
 
@@ -57,7 +61,9 @@ const CardList = ({ cards, setCards }: CardListProps) => {
     };
 
     const handleCardClick = (card: StoreCard) => {
-        setFullScreenCard(card);
+        if (!isMenuOpen && deleteCardId === null) {
+            setFullScreenCard(card);
+        }
     };
 
     const handleCloseFullScreen = () => {
@@ -74,14 +80,21 @@ const CardList = ({ cards, setCards }: CardListProps) => {
           <CardContent className="p-6">
               <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold">{card.storeName}</h2>
-                  <DropdownMenu>
+                  <DropdownMenu onOpenChange={setIsMenuOpen}>
                       <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                               <MoreVertical className="h-4 w-4" />
                           </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                          <DropdownMenuItem onSelect={() => setDeleteCardId(card.id)}>
+                          <DropdownMenuItem onSelect={(e) => {
+                              e.preventDefault();
+                              setDeleteCardId(card.id);
+                          }}>
                               <Trash2 className="mr-2 h-4 w-4" />
                               <span>Delete</span>
                           </DropdownMenuItem>
@@ -89,7 +102,11 @@ const CardList = ({ cards, setCards }: CardListProps) => {
                   </DropdownMenu>
               </div>
               <div className="flex justify-center mb-4">
-                  <svg id={`barcode-${card.id}`}></svg>
+                  {card.isQRCode ? (
+                    <QRCode value={card.cardNumber} size={128} />
+                  ) : (
+                    <svg id={`barcode-${card.id}`}></svg>
+                  )}
               </div>
           </CardContent>
       </Card>
@@ -100,7 +117,9 @@ const CardList = ({ cards, setCards }: CardListProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {cards.map(renderCard)}
           </div>
-          <AlertDialog open={!!deleteCardId} onOpenChange={() => setDeleteCardId(null)}>
+          <AlertDialog open={deleteCardId !== null} onOpenChange={(open) => {
+              if (!open) setDeleteCardId(null);
+          }}>
               <AlertDialogContent>
                   <AlertDialogHeader>
                       <AlertDialogTitle>Are you sure you want to delete this card?</AlertDialogTitle>

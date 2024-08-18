@@ -2,12 +2,14 @@ import React, { useEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import JsBarcode from 'jsbarcode';
+import QRCode from 'qrcode.react';
 
 type StoreCard = {
   id: string;
   storeName: string;
   cardNumber: string;
   color: string;
+  isQRCode: boolean;
 };
 
 type FullScreenCardProps = {
@@ -19,7 +21,7 @@ const FullScreenCard = ({ card, onClose }: FullScreenCardProps) => {
   const barcodeRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
-    if (barcodeRef.current) {
+    if (!card.isQRCode && barcodeRef.current) {
       JsBarcode(barcodeRef.current, card.cardNumber, {
         format: "CODE128",
         width: 2,
@@ -40,7 +42,7 @@ const FullScreenCard = ({ card, onClose }: FullScreenCardProps) => {
       document.body.style.filter = prevBrightness;
       document.body.style.overflow = 'auto';
     };
-  }, [card.cardNumber]);
+  }, [card.cardNumber, card.isQRCode]);
 
   return (
     <div
@@ -61,7 +63,11 @@ const FullScreenCard = ({ card, onClose }: FullScreenCardProps) => {
       </div>
       <div className="flex-grow flex items-center justify-center w-full">
         <div className="bg-white p-8 rounded-lg max-w-full">
-          <svg ref={barcodeRef}></svg>
+          {card.isQRCode ? (
+            <QRCode value={card.cardNumber} size={256} />
+          ) : (
+            <svg ref={barcodeRef}></svg>
+          )}
         </div>
       </div>
     </div>
