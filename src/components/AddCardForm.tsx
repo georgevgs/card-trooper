@@ -19,7 +19,7 @@ type AddCardFormProps = {
 const AddCardForm = ({ onAddCard }: AddCardFormProps) => {
   const [storeName, setStoreName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
-  const [color, setColor] = useState('#0000FF'); // Default blue color
+  const [color, setColor] = useState('#0000FF');
   const [isQRCode, setIsQRCode] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -52,12 +52,14 @@ const AddCardForm = ({ onAddCard }: AddCardFormProps) => {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="cardNumber">Card Number / Barcode</Label>
+        <Label htmlFor="cardNumber">Card Number</Label>
         <Input
           id="cardNumber"
+          type={isQRCode ? 'text' : 'number'}
           value={cardNumber}
           onChange={(e) => setCardNumber(e.target.value)}
           required
+          className="no-spinner"
         />
       </div>
       <div className="space-y-2">

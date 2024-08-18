@@ -49,7 +49,7 @@ const MainPage = () => {
       <CardList cards={cards} setCards={setCards} />
 
       <Dialog open={isAddCardOpen} onOpenChange={setIsAddCardOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px] mx-auto w-[calc(100%-2rem)] p-6 rounded-2xl">
           <DialogHeader>
             <DialogTitle>Add New Card</DialogTitle>
             <DialogDescription>

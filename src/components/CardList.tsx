@@ -120,15 +120,15 @@ const CardList = ({ cards, setCards }: CardListProps) => {
           <AlertDialog open={deleteCardId !== null} onOpenChange={(open) => {
               if (!open) setDeleteCardId(null);
           }}>
-              <AlertDialogContent>
+              <AlertDialogContent className="mx-auto w-[calc(100%-2rem)] sm:max-w-[425px] p-6 rounded-2xl">
                   <AlertDialogHeader>
                       <AlertDialogTitle>Are you sure you want to delete this card?</AlertDialogTitle>
                       <AlertDialogDescription>
                           This action cannot be undone. This will permanently delete the card.
                       </AlertDialogDescription>
                   </AlertDialogHeader>
-                  <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogFooter className="sm:flex-row sm:justify-end">
+                      <AlertDialogCancel className="mb-2 sm:mb-0">Cancel</AlertDialogCancel>
                       <AlertDialogAction onClick={() => deleteCardId && deleteCard(deleteCardId)}>
                           Delete
                       </AlertDialogAction>

@@ -26,47 +26,42 @@ const FullScreenCard = ({ card, onClose }: FullScreenCardProps) => {
         format: "CODE128",
         width: 2,
         height: 100,
-        displayValue: true
+        displayValue: true,
+        fontSize: 16,
+        margin: 10
       });
     }
 
-    // Set maximum brightness
-    const prevBrightness = document.body.style.filter;
-    document.body.style.filter = 'brightness(100%)';
-
-    // Lock scroll
     document.body.style.overflow = 'hidden';
-
-    // Revert brightness and unlock scroll on component unmount
     return () => {
-      document.body.style.filter = prevBrightness;
       document.body.style.overflow = 'auto';
     };
   }, [card.cardNumber, card.isQRCode]);
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-between p-4"
+      className="fixed inset-0 z-50 flex flex-col"
       style={{ backgroundColor: card.color }}
     >
-      <div className="w-full flex justify-between items-center">
+      <div className="p-4 flex items-center relative">
         <Button
           variant="ghost"
           size="icon"
           onClick={onClose}
-          className="text-white"
+          className="text-white absolute left-4"
         >
           <ArrowLeft className="h-6 w-6" />
         </Button>
-        <h2 className="text-2xl font-bold text-white">{card.storeName}</h2>
-        <div className="w-12"></div> {/* Spacer for alignment */}
+        <h2 className="text-xl font-bold text-white w-full text-center">
+          {card.storeName}
+        </h2>
       </div>
-      <div className="flex-grow flex items-center justify-center w-full">
-        <div className="bg-white p-8 rounded-lg max-w-full">
+      <div className="flex-grow flex justify-center items-center p-4">
+        <div className="bg-white p-6 rounded-2xl w-full max-w-md flex justify-center items-center">
           {card.isQRCode ? (
             <QRCode value={card.cardNumber} size={256} />
           ) : (
-            <svg ref={barcodeRef}></svg>
+            <svg ref={barcodeRef} className="w-full"></svg>
           )}
         </div>
       </div>
