@@ -1,12 +1,10 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import CardList from '../components/CardList';
-import AddCardForm from '../components/AddCardForm';
+import Layout from '@/layouts/Layout.astro';
+import MainPage from '@/components/MainPage';
 ---
 
 <Layout title="Stocard Alternative">
 	<main class="container mx-auto p-4">
-		<AddCardForm client:load />
-		<CardList client:load />
+		<MainPage client:load />
 	</main>
 </Layout>

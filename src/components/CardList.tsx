@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Trash2 } from "lucide-react";
@@ -20,23 +20,20 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface StoreCard {
+type StoreCard = {
     id: string;
     storeName: string;
     cardNumber: string;
     color: string;
-}
+};
 
-const CardList: React.FC = () => {
-    const [cards, setCards] = useState<StoreCard[]>([]);
+type CardListProps = {
+    cards: StoreCard[];
+    setCards: React.Dispatch<React.SetStateAction<StoreCard[]>>;
+};
+
+const CardList = ({ cards, setCards }: CardListProps) => {
     const [deleteCardId, setDeleteCardId] = useState<string | null>(null);
-
-    useEffect(() => {
-        const storedCards = localStorage.getItem('storeCards');
-        if (storedCards) {
-            setCards(JSON.parse(storedCards));
-        }
-    }, []);
 
     useEffect(() => {
         cards.forEach(card => {
@@ -57,29 +54,30 @@ const CardList: React.FC = () => {
     };
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {cards.map(card => (
-            <Card key={card.id} className="relative overflow-hidden">
+            <Card key={card.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <div className="h-6" style={{ backgroundColor: card.color }} />
                 <CardContent className="p-6">
-                    <div className={`text-white p-4 -mx-6 -mt-6 mb-4`} style={{ backgroundColor: card.color }}>
+                    <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-semibold">{card.storeName}</h2>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onSelect={() => setDeleteCardId(card.id)}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    <span>Delete</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                     <div className="flex justify-center mb-4">
                         <svg id={`barcode-${card.id}`}></svg>
                     </div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="absolute top-2 right-2 h-8 w-8 p-0">
-                                <MoreVertical className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => setDeleteCardId(card.id)}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                <span>Delete</span>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </CardContent>
             </Card>
           ))}
