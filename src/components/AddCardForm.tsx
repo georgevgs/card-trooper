@@ -14,12 +14,13 @@ type StoreCard = {
 
 type AddCardFormProps = {
   onAddCard: (card: StoreCard) => void;
+  onClose: () => void;
 };
 
-const AddCardForm = ({ onAddCard }: AddCardFormProps) => {
+const AddCardForm: React.FC<AddCardFormProps> = ({ onAddCard, onClose }) => {
   const [storeName, setStoreName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
-  const [color, setColor] = useState('#0000FF');
+  const [color, setColor] = useState('#000000');
   const [isQRCode, setIsQRCode] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,11 +34,7 @@ const AddCardForm = ({ onAddCard }: AddCardFormProps) => {
     };
 
     onAddCard(newCard);
-
-    setStoreName('');
-    setCardNumber('');
-    setColor('#0000FF');
-    setIsQRCode(false);
+    onClose();
   };
 
   return (
@@ -59,7 +56,6 @@ const AddCardForm = ({ onAddCard }: AddCardFormProps) => {
           value={cardNumber}
           onChange={(e) => setCardNumber(e.target.value)}
           required
-          className="no-spinner"
         />
       </div>
       <div className="space-y-2">
@@ -70,7 +66,7 @@ const AddCardForm = ({ onAddCard }: AddCardFormProps) => {
             id="color"
             value={color}
             onChange={(e) => setColor(e.target.value)}
-            className="w-12 h-12 p-1 rounded"
+            className="w-10 h-10 p-0 rounded"
           />
           <Input
             type="text"
@@ -88,7 +84,12 @@ const AddCardForm = ({ onAddCard }: AddCardFormProps) => {
         />
         <Label htmlFor="qr-code">Use QR Code</Label>
       </div>
-      <Button type="submit" className="w-full">Add Card</Button>
+      <div className="flex justify-end space-x-2 pt-4">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit">Add Card</Button>
+      </div>
     </form>
   );
 };
