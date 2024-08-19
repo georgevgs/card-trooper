@@ -23,7 +23,7 @@ import {
 import FullScreenCard from './FullScreenCard';
 
 type StoreCard = {
-    id: string;
+    id: number;
     storeName: string;
     cardNumber: string;
     color: string;
@@ -32,11 +32,11 @@ type StoreCard = {
 
 type CardListProps = {
     cards: StoreCard[];
-    setCards: React.Dispatch<React.SetStateAction<StoreCard[]>>;
+    onDeleteCard: (id: number) => void;
 };
 
-const CardList = ({ cards, setCards }: CardListProps) => {
-    const [deleteCardId, setDeleteCardId] = useState<string | null>(null);
+const CardList: React.FC<CardListProps> = ({ cards, onDeleteCard }) => {
+    const [deleteCardId, setDeleteCardId] = useState<number | null>(null);
     const [fullScreenCard, setFullScreenCard] = useState<StoreCard | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -53,10 +53,8 @@ const CardList = ({ cards, setCards }: CardListProps) => {
         });
     }, [cards]);
 
-    const deleteCard = (id: string) => {
-        const updatedCards = cards.filter(card => card.id !== id);
-        setCards(updatedCards);
-        localStorage.setItem('storeCards', JSON.stringify(updatedCards));
+    const handleDeleteCard = (id: number) => {
+        onDeleteCard(id);
         setDeleteCardId(null);
     };
 
@@ -129,7 +127,7 @@ const CardList = ({ cards, setCards }: CardListProps) => {
                   </AlertDialogHeader>
                   <AlertDialogFooter className="sm:flex-row sm:justify-end">
                       <AlertDialogCancel className="mb-2 sm:mb-0">Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteCardId && deleteCard(deleteCardId)}>
+                      <AlertDialogAction onClick={() => deleteCardId && handleDeleteCard(deleteCardId)}>
                           Delete
                       </AlertDialogAction>
                   </AlertDialogFooter>

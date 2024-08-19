@@ -9,6 +9,17 @@ export const Users = defineTable({
   }
 });
 
+export const Cards = defineTable({
+  columns: {
+    id: column.number({ primaryKey: true }),
+    userId: column.number({ references: () => Users.columns.id }),
+    storeName: column.text(),
+    cardNumber: column.text(),
+    color: column.text(),
+    isQRCode: column.boolean(),
+  }
+});
+
 export default defineDb({
-  tables: { Users },
+  tables: { Users, Cards },
 });

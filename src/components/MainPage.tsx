@@ -11,7 +11,7 @@ import AddCardForm from './AddCardForm';
 import CardList from './CardList';
 
 type StoreCard = {
-  id: string;
+  id: number;
   storeName: string;
   cardNumber: string;
   color: string;
@@ -27,17 +27,52 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   const [cards, setCards] = useState<StoreCard[]>([]);
 
   useEffect(() => {
-    const storedCards = localStorage.getItem('storeCards');
-    if (storedCards) {
-      setCards(JSON.parse(storedCards));
-    }
+    fetchCards();
   }, []);
 
-  const handleAddCard = (newCard: StoreCard) => {
-    const updatedCards = [...cards, newCard];
-    setCards(updatedCards);
-    localStorage.setItem('storeCards', JSON.stringify(updatedCards));
-    setIsAddCardOpen(false);
+  const fetchCards = async () => {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch('/api/cards', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    if (response.ok) {
+      const fetchedCards = await response.json();
+      setCards(fetchedCards);
+    }
+  };
+
+  const handleAddCard = async (newCard: Omit<StoreCard, 'id'>) => {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch('/api/cards', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(newCard),
+    });
+    if (response.ok) {
+      const { id } = await response.json();
+      setCards([...cards, { ...newCard, id }]);
+      setIsAddCardOpen(false);
+    }
+  };
+
+  const handleDeleteCard = async (id: number) => {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch('/api/cards', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ id }),
+    });
+    if (response.ok) {
+      setCards(cards.filter(card => card.id !== id));
+    }
   };
 
   return (
@@ -56,7 +91,7 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
         </header>
 
         <main className="flex-grow overflow-auto">
-          <CardList cards={cards} setCards={setCards} />
+          <CardList cards={cards} onDeleteCard={handleDeleteCard} />
         </main>
 
         <footer className="mt-6 text-center text-sm opacity-70">

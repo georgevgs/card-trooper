@@ -5,7 +5,7 @@ import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode.react';
 
 type StoreCard = {
-  id: string;
+  id: number;
   storeName: string;
   cardNumber: string;
   color: string;
@@ -17,7 +17,7 @@ type FullScreenCardProps = {
   onClose: () => void;
 };
 
-const FullScreenCard = ({ card, onClose }: FullScreenCardProps) => {
+const FullScreenCard: React.FC<FullScreenCardProps> = ({ card, onClose }) => {
   const barcodeRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {

@@ -5,7 +5,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 type StoreCard = {
-  id: string;
   storeName: string;
   cardNumber: string;
   color: string;
@@ -26,7 +25,6 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ onAddCard, onClose }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newCard: StoreCard = {
-      id: Date.now().toString(),
       storeName,
       cardNumber,
       color,
@@ -34,7 +32,6 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ onAddCard, onClose }) => {
     };
 
     onAddCard(newCard);
-    onClose();
   };
 
   return (
