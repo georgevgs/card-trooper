@@ -2,7 +2,7 @@ import { db, Users, eq } from 'astro:db';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
+const JWT_SECRET = import.meta.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
   throw new Error('JWT_SECRET must be set in environment variables');

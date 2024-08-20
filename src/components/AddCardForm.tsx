@@ -1,38 +1,18 @@
-import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-
-type StoreCard = {
-  storeName: string;
-  cardNumber: string;
-  color: string;
-  isQRCode: boolean;
-};
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import type { StoreCard } from '@/types/storecard';
+import { useAddCardForm } from '@/hooks/useAddCardForm';
 
 type AddCardFormProps = {
   onAddCard: (card: StoreCard) => void;
   onClose: () => void;
 };
 
-const AddCardForm: React.FC<AddCardFormProps> = ({ onAddCard, onClose }) => {
-  const [storeName, setStoreName] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [color, setColor] = useState('#000000');
-  const [isQRCode, setIsQRCode] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newCard: StoreCard = {
-      storeName,
-      cardNumber,
-      color,
-      isQRCode,
-    };
-
-    onAddCard(newCard);
-  };
+const AddCardForm = ({ onAddCard, onClose }: AddCardFormProps) => {
+  const { formState, handleInputChange, handleSubmit } = useAddCardForm(onAddCard);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -40,8 +20,9 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ onAddCard, onClose }) => {
         <Label htmlFor="storeName">Store Name</Label>
         <Input
           id="storeName"
-          value={storeName}
-          onChange={(e) => setStoreName(e.target.value)}
+          name="storeName"
+          value={formState.storeName}
+          onChange={handleInputChange}
           required
         />
       </div>
@@ -49,9 +30,12 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ onAddCard, onClose }) => {
         <Label htmlFor="cardNumber">Card Number</Label>
         <Input
           id="cardNumber"
-          type={isQRCode ? 'text' : 'number'}
-          value={cardNumber}
-          onChange={(e) => setCardNumber(e.target.value)}
+          name="cardNumber"
+          type={formState.isQRCode ? 'text' : 'tel'}
+          inputMode={formState.isQRCode ? 'text' : 'numeric'}
+          pattern={formState.isQRCode ? undefined : '[0-9]*'}
+          value={formState.cardNumber}
+          onChange={handleInputChange}
           required
         />
       </div>
@@ -61,25 +45,32 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ onAddCard, onClose }) => {
           <Input
             type="color"
             id="color"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
+            name="color"
+            value={formState.color}
+            onChange={handleInputChange}
             className="w-10 h-10 p-0 rounded"
           />
           <Input
             type="text"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
+            name="color"
+            value={formState.color}
+            onChange={handleInputChange}
             className="flex-grow"
           />
         </div>
       </div>
       <div className="flex items-center space-x-2">
         <Switch
-          id="qr-code"
-          checked={isQRCode}
-          onCheckedChange={setIsQRCode}
+          id="isQRCode"
+          name="isQRCode"
+          checked={formState.isQRCode}
+          onCheckedChange={(checked) =>
+            handleInputChange({
+              target: { name: 'isQRCode', type: 'checkbox', checked },
+            } as React.ChangeEvent<HTMLInputElement>)
+          }
         />
-        <Label htmlFor="qr-code">Use QR Code</Label>
+        <Label htmlFor="isQRCode">Use QR Code</Label>
       </div>
       <div className="flex justify-end space-x-2 pt-4">
         <Button type="button" variant="outline" onClick={onClose}>
