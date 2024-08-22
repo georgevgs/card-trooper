@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import type { StoreCard } from '@/types/storecard';
+import type { StoreCardType } from '@/types/storecard';
 import { useAddCardForm } from '@/hooks/useAddCardForm';
 
 type AddCardFormProps = {
-  onAddCard: (card: StoreCard) => void;
+  onAddCard: (card: StoreCardType) => void;
   onClose: () => void;
 };
 
