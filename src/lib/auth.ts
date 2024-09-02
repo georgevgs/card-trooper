@@ -3,48 +3,65 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
 const JWT_SECRET = import.meta.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = import.meta.env.JWT_REFRESH_SECRET;
 
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET must be set in environment variables');
+if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
+  throw new Error('JWT_SECRET and JWT_REFRESH_SECRET must be set in environment variables');
 }
 
-export async function generateToken(userId: number): Promise<string> {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1d' });
-}
+export const generateTokens = (userId: number) => {
+  const accessToken = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '15m' });
+  const refreshToken = jwt.sign({ userId }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
-export async function verifyToken(token: string): Promise<{ userId: number } | null> {
+  return { accessToken, refreshToken };
+};
+
+export const verifyAccessToken = (token: string): { userId: number } | null => {
   try {
     return jwt.verify(token, JWT_SECRET) as { userId: number };
   } catch (error) {
-    console.error('Token verification error:', error);
+    console.error('Access token verification failed:', error);
     return null;
   }
-}
+};
 
-export async function hashPassword(password: string): Promise<string> {
+export const verifyRefreshToken = (token: string): { userId: number } | null => {
+  try {
+    return jwt.verify(token, JWT_REFRESH_SECRET) as { userId: number };
+  } catch (error) {
+    console.error('Refresh token verification failed:', error);
+    return null;
+  }
+};
+
+export const hashPassword = async (password: string) => {
   return bcrypt.hash(password, 10);
-}
+};
 
-export async function comparePassword(password: string, hash: string): Promise<boolean> {
+export const comparePassword = async (password: string, hash: string) => {
   return bcrypt.compare(password, hash);
-}
+};
 
-export async function registerUser(username: string, email: string, password: string): Promise<number | null> {
+export const registerUser = async (username: string, email: string, password: string) => {
   const hashedPassword = await hashPassword(password);
   try {
-    const result = await db.insert(Users).values({
-      username,
-      email,
-      passwordHash: hashedPassword,
-    }).returning({ insertedId: Users.id });
+    const result = await db
+      .insert(Users)
+      .values({
+        username,
+        email,
+        passwordHash: hashedPassword,
+      })
+      .returning({ insertedId: Users.id });
+
     return result[0].insertedId;
   } catch (error) {
     console.error('Error registering user:', error);
     return null;
   }
-}
+};
 
-export async function loginUser(email: string, password: string): Promise<number | null> {
+export const loginUser = async (email: string, password: string) => {
   const users = await db.select().from(Users).where(eq(Users.email, email)).limit(1);
   if (users.length === 0) return null;
 
@@ -53,4 +70,4 @@ export async function loginUser(email: string, password: string): Promise<number
   if (!isPasswordValid) return null;
 
   return user.id;
-}
+};

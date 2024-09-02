@@ -1,17 +1,18 @@
 import type { APIRoute } from 'astro';
-import { db, eq, Users } from 'astro:db';
-import bcrypt from 'bcryptjs';
-import { generateToken } from '@/lib/auth';
-
-const JWT_SECRET = import.meta.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET must be set in environment variables');
-}
+import { db, Users, eq } from 'astro:db';
+import { hashPassword, generateTokens } from '@/lib/auth';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
     const { username, email, password } = await request.json();
+
+    // Validate input
+    if (!username || !email || !password) {
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     // Check if user already exists
     const existingUser = await db.select().from(Users).where(eq(Users.email, email)).limit(1);
@@ -23,20 +24,23 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hashPassword(password);
 
     // Insert the new user into the database
-    const result = await db.insert(Users).values({
-      username,
-      email,
-      passwordHash: hashedPassword,
-    }).returning({ insertedId: Users.id });
+    const result = await db
+      .insert(Users)
+      .values({
+        username,
+        email,
+        passwordHash: hashedPassword,
+      })
+      .returning({ insertedId: Users.id });
 
     if (result && result[0]?.insertedId) {
-      // Generate a token for the new user
-      const token = await generateToken(result[0].insertedId);
+      // Generate tokens for the new user
+      const { accessToken, refreshToken } = generateTokens(result[0].insertedId);
 
-      return new Response(JSON.stringify({ success: true, token }), {
+      return new Response(JSON.stringify({ success: true, accessToken, refreshToken }), {
         status: 201,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -45,7 +49,11 @@ export const POST: APIRoute = async ({ request }) => {
     }
   } catch (error) {
     console.error('Registration error:', error);
-    return new Response(JSON.stringify({ error: 'Registration failed' }), {
+
+    // Determine if it's a known error or an unexpected one
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

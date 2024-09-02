@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AddCardForm from './AddCardForm';
 import CardList from './CardList';
+import { useAuth } from '@/hooks/useAuth';
 
 type StoreCard = {
   id: number;
@@ -13,62 +14,83 @@ type StoreCard = {
   isQRCode: boolean;
 };
 
-interface MainPageProps {
-  onLogout: () => void;
-}
-
-const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
+const MainPage: React.FC = () => {
+  const { isAuthenticated, accessToken, handleLogout } = useAuth();
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [cards, setCards] = useState<StoreCard[]>([]);
 
   useEffect(() => {
-    fetchCards();
-  }, []);
+    if (isAuthenticated && accessToken) {
+      fetchCards();
+    }
+  }, [isAuthenticated, accessToken]);
 
   const fetchCards = async () => {
-    const token = localStorage.getItem('authToken');
-    const response = await fetch('/api/cards', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (response.ok) {
-      const fetchedCards = await response.json();
-      setCards(fetchedCards);
+    if (!accessToken) return;
+    try {
+      const response = await fetch('/api/cards', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (response.ok) {
+        const fetchedCards = await response.json();
+        setCards(fetchedCards);
+      } else {
+        console.error('Failed to fetch cards');
+      }
+    } catch (error) {
+      console.error('Error fetching cards:', error);
     }
   };
 
   const handleAddCard = async (newCard: Omit<StoreCard, 'id'>) => {
-    const token = localStorage.getItem('authToken');
-    const response = await fetch('/api/cards', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(newCard),
-    });
-    if (response.ok) {
-      const { id } = await response.json();
-      setCards([...cards, { ...newCard, id }]);
-      setIsAddCardOpen(false);
+    if (!accessToken) return;
+    try {
+      const response = await fetch('/api/cards', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(newCard),
+      });
+      if (response.ok) {
+        const { id } = await response.json();
+        setCards([...cards, { ...newCard, id }]);
+        setIsAddCardOpen(false);
+      } else {
+        console.error('Failed to add card');
+      }
+    } catch (error) {
+      console.error('Error adding card:', error);
     }
   };
 
   const handleDeleteCard = async (id: number) => {
-    const token = localStorage.getItem('authToken');
-    const response = await fetch('/api/cards', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ id }),
-    });
-    if (response.ok) {
-      setCards(cards.filter((card) => card.id !== id));
+    if (!accessToken) return;
+    try {
+      const response = await fetch('/api/cards', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ id }),
+      });
+      if (response.ok) {
+        setCards(cards.filter((card) => card.id !== id));
+      } else {
+        console.error('Failed to delete card');
+      }
+    } catch (error) {
+      console.error('Error deleting card:', error);
     }
   };
+
+  if (!isAuthenticated) {
+    return <div>Please log in to view this content.</div>;
+  }
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900">
@@ -85,7 +107,7 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
               <Plus className="mr-2 h-4 w-4" /> Add Card
             </Button>
             <Button
-              onClick={onLogout}
+              onClick={handleLogout}
               className="bg-purple-600 hover:bg-purple-700 text-white font-bold transition-all duration-300 ease-in-out transform hover:scale-105"
             >
               <LogOut className="mr-2 h-4 w-4" /> Logout
