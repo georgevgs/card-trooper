@@ -1,90 +1,93 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import * as AuthService from '@/services/AuthService';
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = () => {
-    const storedAccessToken = localStorage.getItem('accessToken');
-    const refreshToken = localStorage.getItem('refreshToken');
-
-    if (storedAccessToken && refreshToken) {
-      setAccessToken(storedAccessToken);
+  const refreshAccessToken = useCallback(async () => {
+    try {
+      const newAccessToken = await AuthService.refreshToken();
+      setAccessToken(newAccessToken);
       setIsAuthenticated(true);
-      setupTokenRefresh();
-    } else {
+      return true;
+    } catch (error) {
+      console.error('Failed to refresh token:', error);
       setIsAuthenticated(false);
       setAccessToken(null);
+      return false;
     }
-  };
+  }, []);
 
-  const setupTokenRefresh = () => {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) return;
-
-    const refreshTokens = async () => {
+  useEffect(() => {
+    const initAuth = async () => {
+      setIsLoading(true);
       try {
-        const newAccessToken = await AuthService.refreshAccessToken(refreshToken);
-        storeTokens(newAccessToken, refreshToken);
-        setTimeout(refreshTokens, 14 * 60 * 1000); // Refresh every 14 minutes
+        const session = localStorage.getItem('session');
+        if (session) {
+          const success = await refreshAccessToken();
+          if (!success) {
+            localStorage.removeItem('session');
+          }
+        }
       } catch (error) {
-        console.error('Failed to refresh token:', error);
-        handleLogout();
+        console.error('Initial auth check failed:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    setTimeout(refreshTokens, 14 * 60 * 1000); // Initial refresh after 14 minutes
-  };
+    initAuth();
+  }, [refreshAccessToken]);
 
   const handleLogin = async (email: string, password: string) => {
+    setIsLoading(true);
     try {
-      const { accessToken, refreshToken } = await AuthService.login(email, password);
-      storeTokens(accessToken, refreshToken);
+      const { accessToken } = await AuthService.login(email, password);
+      setAccessToken(accessToken);
       setIsAuthenticated(true);
-      setupTokenRefresh();
+      localStorage.setItem('session', 'true');
     } catch (error) {
       console.error('Login error:', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleRegister = async (username: string, email: string, password: string) => {
+    setIsLoading(true);
     try {
-      const { accessToken, refreshToken } = await AuthService.register(username, email, password);
-      storeTokens(accessToken, refreshToken);
-      setIsAuthenticated(true);
-      setupTokenRefresh();
+      await AuthService.register(username, email, password);
+      // After successful registration, log the user in
+      await handleLogin(email, password);
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    removeTokens();
-    setAccessToken(null);
-    setIsAuthenticated(false);
-  };
-
-  const storeTokens = (newAccessToken: string, refreshToken: string) => {
-    localStorage.setItem('accessToken', newAccessToken);
-    localStorage.setItem('refreshToken', refreshToken);
-    setAccessToken(newAccessToken);
-  };
-
-  const removeTokens = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      await AuthService.logout();
+      setAccessToken(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem('session');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return {
     isAuthenticated,
     accessToken,
+    isLoading,
     handleLogin,
     handleRegister,
     handleLogout,

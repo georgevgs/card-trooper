@@ -1,57 +1,3 @@
-type LoginResponse = {
-  accessToken: string;
-  refreshToken: string;
-};
-
-type RegisterResponse = LoginResponse;
-
-export const login = async (email: string, password: string): Promise<LoginResponse> => {
-  const response = await sendRequest('/api/login', { email, password });
-  return parseResponse<LoginResponse>(response);
-};
-
-export const register = async (
-  username: string,
-  email: string,
-  password: string,
-): Promise<RegisterResponse> => {
-  const response = await sendRequest('/api/register', { username, email, password });
-  return parseResponse<RegisterResponse>(response);
-};
-
-export const refreshAccessToken = async (refreshToken: string): Promise<string> => {
-  const response = await sendRequest('/api/refresh-token', { refreshToken });
-  const { accessToken } = await parseResponse<{ accessToken: string }>(response);
-  return accessToken;
-};
-
-const sendRequest = async (url: string, data: object): Promise<Response> => {
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    throw new Error(await getErrorMessage(response));
-  }
-
-  return response;
-};
-
-const parseResponse = async <T>(response: Response): Promise<T> => {
-  return (await response.json()) as T;
-};
-
-const getErrorMessage = async (response: Response): Promise<string> => {
-  try {
-    const errorData = await response.json();
-    return errorData.error || 'Request failed';
-  } catch {
-    return 'An unexpected error occurred';
-  }
-};
-
 export const fetchCards = async (accessToken: string) => {
   const response = await fetch('/api/cards', {
     headers: {
@@ -98,4 +44,57 @@ export const deleteCard = async (accessToken: string, cardId: number) => {
   }
 
   return response.json();
+};
+
+export const login = async (email: string, password: string): Promise<{ accessToken: string }> => {
+  const response = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Login failed');
+  }
+
+  return response.json();
+};
+
+export const register = async (
+  username: string,
+  email: string,
+  password: string,
+): Promise<void> => {
+  const response = await fetch('/api/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, email, password }),
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Registration failed');
+  }
+};
+
+export const refreshToken = async (): Promise<string> => {
+  const response = await fetch('/api/refresh-token', {
+    method: 'POST',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Token refresh failed');
+  }
+
+  const { accessToken } = await response.json();
+  return accessToken;
+};
+
+export const logout = async (): Promise<void> => {
+  await fetch('/api/logout', {
+    method: 'POST',
+    credentials: 'include',
+  });
 };

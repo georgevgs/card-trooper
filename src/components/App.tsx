@@ -1,20 +1,16 @@
+import React from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import WelcomePage from '@/components/WelcomePage';
 import MainPage from '@/components/MainPage';
-import AuthProvider from '@/components/AuthProvider';
-import { useAuth } from '@/hooks/useAuth';
 
-const App = ({}) => {
+const App: React.FC = () => {
   const { isAuthenticated, handleLogin, handleRegister, handleLogout } = useAuth();
 
-  const renderContent = () => {
-    if (isAuthenticated) {
-      return <MainPage onLogout={handleLogout} />;
-    }
-
+  if (!isAuthenticated) {
     return <WelcomePage onLogin={handleLogin} onRegister={handleRegister} />;
-  };
+  }
 
-  return <AuthProvider>{renderContent()}</AuthProvider>;
+  return <MainPage onLogout={handleLogout} />;
 };
 
 export default App;

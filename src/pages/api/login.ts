@@ -1,40 +1,39 @@
 import type { APIRoute } from 'astro';
-import { db, eq, Users } from 'astro:db';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { loginUser, generateTokens } from '@/lib/auth';
 
-const JWT_SECRET = import.meta.env.JWT_SECRET || 'your_fallback_secret';
+export const POST: APIRoute = async ({ request, cookies }) => {
+  const { email, password } = await request.json();
 
-export const POST: APIRoute = async ({ request }) => {
   try {
-    const { email, password } = await request.json();
-
-    const user = await db.select().from(Users).where(eq(Users.email, email)).limit(1);
-    if (user.length === 0) {
-      return new Response(JSON.stringify({ error: 'User not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    const userId = await loginUser(email, password);
+    if (!userId) {
+      throw new Error('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user[0].passwordHash);
-    if (!isPasswordValid) {
-      return new Response(JSON.stringify({ error: 'Invalid password' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    const { accessToken, refreshToken } = generateTokens(userId);
 
-    const token = jwt.sign({ userId: user[0].id }, JWT_SECRET, { expiresIn: '1d' });
+    console.log('Generated refresh token:', refreshToken);
 
-    return new Response(JSON.stringify({ success: true, token }), {
+    // Set the refresh token as a cookie
+    cookies.set('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: import.meta.env.PROD, // Use secure in production
+      sameSite: 'lax', // Changed to 'lax' for debugging
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+
+    console.log('Login successful, refresh token set in cookie');
+    console.log('Refresh token cookie:', cookies.get('refreshToken'));
+
+    return new Response(JSON.stringify({ accessToken }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Login error:', error);
-    return new Response(JSON.stringify({ error: 'Login failed' }), {
-      status: 500,
+    return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
+      status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
   }

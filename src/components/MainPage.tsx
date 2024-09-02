@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import AddCardForm from './AddCardForm';
 import CardList from './CardList';
 import { useAuth } from '@/hooks/useAuth';
+import * as AuthService from '@/services/AuthService';
 
 type StoreCard = {
   id: number;
@@ -14,8 +15,13 @@ type StoreCard = {
   isQRCode: boolean;
 };
 
-const MainPage: React.FC = () => {
-  const { isAuthenticated, accessToken, handleLogout } = useAuth();
+// Define the type for MainPage props including the onLogout function
+type MainPageProps = {
+  onLogout: () => Promise<void>;
+};
+
+const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
+  const { isAuthenticated, accessToken, isLoading } = useAuth();
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [cards, setCards] = useState<StoreCard[]>([]);
 
@@ -28,65 +34,37 @@ const MainPage: React.FC = () => {
   const fetchCards = async () => {
     if (!accessToken) return;
     try {
-      const response = await fetch('/api/cards', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      if (response.ok) {
-        const fetchedCards = await response.json();
-        setCards(fetchedCards);
-      } else {
-        console.error('Failed to fetch cards');
-      }
+      const fetchedCards = await AuthService.fetchCards(accessToken);
+      setCards(fetchedCards);
     } catch (error) {
-      console.error('Error fetching cards:', error);
+      console.error('Failed to fetch cards:', error);
     }
   };
 
   const handleAddCard = async (newCard: Omit<StoreCard, 'id'>) => {
     if (!accessToken) return;
     try {
-      const response = await fetch('/api/cards', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(newCard),
-      });
-      if (response.ok) {
-        const { id } = await response.json();
-        setCards([...cards, { ...newCard, id }]);
-        setIsAddCardOpen(false);
-      } else {
-        console.error('Failed to add card');
-      }
+      const addedCard = await AuthService.addCard(accessToken, newCard);
+      setCards([...cards, addedCard]);
+      setIsAddCardOpen(false);
     } catch (error) {
-      console.error('Error adding card:', error);
+      console.error('Failed to add card:', error);
     }
   };
 
   const handleDeleteCard = async (id: number) => {
     if (!accessToken) return;
     try {
-      const response = await fetch('/api/cards', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ id }),
-      });
-      if (response.ok) {
-        setCards(cards.filter((card) => card.id !== id));
-      } else {
-        console.error('Failed to delete card');
-      }
+      await AuthService.deleteCard(accessToken, id);
+      setCards(cards.filter((card) => card.id !== id));
     } catch (error) {
-      console.error('Error deleting card:', error);
+      console.error('Failed to delete card:', error);
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   if (!isAuthenticated) {
     return <div>Please log in to view this content.</div>;
@@ -107,7 +85,7 @@ const MainPage: React.FC = () => {
               <Plus className="mr-2 h-4 w-4" /> Add Card
             </Button>
             <Button
-              onClick={handleLogout}
+              onClick={onLogout}
               className="bg-purple-600 hover:bg-purple-700 text-white font-bold transition-all duration-300 ease-in-out transform hover:scale-105"
             >
               <LogOut className="mr-2 h-4 w-4" /> Logout

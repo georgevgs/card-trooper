@@ -27,7 +27,8 @@ export const verifyAccessToken = (token: string): { userId: number } | null => {
 
 export const verifyRefreshToken = (token: string): { userId: number } | null => {
   try {
-    return jwt.verify(token, JWT_REFRESH_SECRET) as { userId: number };
+    const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as { userId: number };
+    return decoded;
   } catch (error) {
     console.error('Refresh token verification failed:', error);
     return null;
