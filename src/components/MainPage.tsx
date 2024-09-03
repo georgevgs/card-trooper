@@ -12,25 +12,52 @@ type MainPageProps = {
   onLogout: () => Promise<void>;
 };
 
-const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
+const CACHE_KEY = 'cardTrooperCards';
+
+const MainPage = ({ onLogout }: MainPageProps) => {
   const { isAuthenticated, accessToken, isLoading } = useAuth();
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [cards, setCards] = useState<StoreCardType[]>([]);
 
   useEffect(() => {
     if (isAuthenticated && accessToken) {
-      fetchCards();
+      loadCards();
     }
   }, [isAuthenticated, accessToken]);
 
-  const fetchCards = async () => {
+  const loadCards = async () => {
     if (!accessToken) {
       return;
     }
+
+    // First, try to load cards from cache
+    const cachedCards = loadCardsFromCache();
+    if (cachedCards.length > 0) {
+      setCards(cachedCards);
+    }
+
+    // Then, fetch the latest cards from the server
     try {
       const fetchedCards = await AuthService.fetchCards(accessToken);
       setCards(fetchedCards);
-    } catch (error) {}
+      // Update the cache with the latest data
+      saveCardsToCache(fetchedCards);
+    } catch (error) {
+      console.error('Failed to fetch cards:', error);
+      // If we failed to fetch, but we have cached data, we'll use that
+      if (cachedCards.length === 0) {
+        setCards(cachedCards);
+      }
+    }
+  };
+
+  const loadCardsFromCache = (): StoreCardType[] => {
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    return cachedData ? JSON.parse(cachedData) : [];
+  };
+
+  const saveCardsToCache = (cardsToCache: StoreCardType[]) => {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cardsToCache));
   };
 
   const handleAddCard = async (newCardData: Omit<StoreCardType, 'id'>) => {
@@ -39,24 +66,32 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     }
     try {
       const addedCard = await AuthService.addCard(accessToken, newCardData);
-
       setCards((prevCards) => {
         const updatedCards = [...prevCards, addedCard];
-
+        saveCardsToCache(updatedCards);
         return updatedCards;
       });
       setIsAddCardOpen(false);
-    } catch (error) {}
+    } catch (error) {
+      console.error('Failed to add card:', error);
+    }
   };
 
   const handleDeleteCard = async (id: number) => {
     if (!accessToken) {
       return;
     }
+
     try {
       await AuthService.deleteCard(accessToken, id);
-      setCards((prevCards) => prevCards.filter((card) => card.id !== id));
-    } catch (error) {}
+      setCards((prevCards) => {
+        const updatedCards = prevCards.filter((card) => card.id !== id);
+        saveCardsToCache(updatedCards);
+        return updatedCards;
+      });
+    } catch (error) {
+      console.error('Failed to delete card:', error);
+    }
   };
 
   if (isLoading) {
