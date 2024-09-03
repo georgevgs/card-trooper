@@ -48,8 +48,6 @@ export const POST: APIRoute = async ({ request }) => {
       throw new Error('Failed to insert user');
     }
   } catch (error) {
-    console.error('Registration error:', error);
-
     // Determine if it's a known error or an unexpected one
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
 

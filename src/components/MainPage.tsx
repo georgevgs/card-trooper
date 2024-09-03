@@ -6,16 +6,8 @@ import AddCardForm from './AddCardForm';
 import CardList from './CardList';
 import { useAuth } from '@/hooks/useAuth';
 import * as AuthService from '@/services/AuthService';
+import type { StoreCardType } from '@/types/storecard';
 
-type StoreCard = {
-  id: number;
-  storeName: string;
-  cardNumber: string;
-  color: string;
-  isQRCode: boolean;
-};
-
-// Define the type for MainPage props including the onLogout function
 type MainPageProps = {
   onLogout: () => Promise<void>;
 };
@@ -23,7 +15,7 @@ type MainPageProps = {
 const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   const { isAuthenticated, accessToken, isLoading } = useAuth();
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
-  const [cards, setCards] = useState<StoreCard[]>([]);
+  const [cards, setCards] = useState<StoreCardType[]>([]);
 
   useEffect(() => {
     if (isAuthenticated && accessToken) {
@@ -32,34 +24,39 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   }, [isAuthenticated, accessToken]);
 
   const fetchCards = async () => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      return;
+    }
     try {
       const fetchedCards = await AuthService.fetchCards(accessToken);
       setCards(fetchedCards);
-    } catch (error) {
-      console.error('Failed to fetch cards:', error);
-    }
+    } catch (error) {}
   };
 
-  const handleAddCard = async (newCard: Omit<StoreCard, 'id'>) => {
-    if (!accessToken) return;
-    try {
-      const addedCard = await AuthService.addCard(accessToken, newCard);
-      setCards([...cards, addedCard]);
-      setIsAddCardOpen(false);
-    } catch (error) {
-      console.error('Failed to add card:', error);
+  const handleAddCard = async (newCardData: Omit<StoreCardType, 'id'>) => {
+    if (!accessToken) {
+      return;
     }
+    try {
+      const addedCard = await AuthService.addCard(accessToken, newCardData);
+
+      setCards((prevCards) => {
+        const updatedCards = [...prevCards, addedCard];
+
+        return updatedCards;
+      });
+      setIsAddCardOpen(false);
+    } catch (error) {}
   };
 
   const handleDeleteCard = async (id: number) => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      return;
+    }
     try {
       await AuthService.deleteCard(accessToken, id);
-      setCards(cards.filter((card) => card.id !== id));
-    } catch (error) {
-      console.error('Failed to delete card:', error);
-    }
+      setCards((prevCards) => prevCards.filter((card) => card.id !== id));
+    } catch (error) {}
   };
 
   if (isLoading) {

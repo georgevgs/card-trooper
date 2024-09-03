@@ -34,7 +34,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
       setIsAuthOpen(false);
     } catch (err) {
       setError('Login failed. Please check your credentials and try again.');
-      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -49,7 +48,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
       setIsAuthOpen(false);
     } catch (err) {
       setError('Registration failed. Please try again.');
-      console.error('Registration error:', err);
     } finally {
       setIsLoading(false);
     }

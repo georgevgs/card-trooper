@@ -1,18 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import type { StoreCardType } from '@/types/storecard';
-import { useAddCardForm } from '@/hooks/useAddCardForm';
 
 type AddCardFormProps = {
-  onAddCard: (card: StoreCardType) => void;
+  onAddCard: (card: Omit<StoreCardType, 'id'>) => void;
   onClose: () => void;
 };
 
 const AddCardForm = ({ onAddCard, onClose }: AddCardFormProps) => {
-  const { formState, handleInputChange, handleSubmit } = useAddCardForm(onAddCard);
+  const [formState, setFormState] = useState<Omit<StoreCardType, 'id'>>({
+    storeName: '',
+    cardNumber: '',
+    color: '#6FFFE9',
+    isQRCode: false,
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormState((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onAddCard(formState);
+    setFormState({
+      storeName: '',
+      cardNumber: '',
+      color: '#6FFFE9',
+      isQRCode: false,
+    });
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

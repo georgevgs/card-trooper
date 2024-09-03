@@ -12,26 +12,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const { accessToken, refreshToken } = generateTokens(userId);
 
-    console.log('Generated refresh token:', refreshToken);
-
-    // Set the refresh token as a cookie
     cookies.set('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: import.meta.env.PROD, // Use secure in production
-      sameSite: 'lax', // Changed to 'lax' for debugging
+      secure: import.meta.env.PROD,
+      sameSite: 'strict',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 30, // 30 days
     });
-
-    console.log('Login successful, refresh token set in cookie');
-    console.log('Refresh token cookie:', cookies.get('refreshToken'));
 
     return new Response(JSON.stringify({ accessToken }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Login error:', error);
     return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },

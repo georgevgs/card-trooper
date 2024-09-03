@@ -13,9 +13,9 @@ export const useAuth = () => {
       setIsAuthenticated(true);
       return true;
     } catch (error) {
-      console.error('Failed to refresh token:', error);
       setIsAuthenticated(false);
       setAccessToken(null);
+
       return false;
     }
   }, []);
@@ -32,7 +32,6 @@ export const useAuth = () => {
           }
         }
       } catch (error) {
-        console.error('Initial auth check failed:', error);
       } finally {
         setIsLoading(false);
       }
@@ -49,7 +48,6 @@ export const useAuth = () => {
       setIsAuthenticated(true);
       localStorage.setItem('session', 'true');
     } catch (error) {
-      console.error('Login error:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -63,7 +61,6 @@ export const useAuth = () => {
       // After successful registration, log the user in
       await handleLogin(email, password);
     } catch (error) {
-      console.error('Registration error:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -78,7 +75,6 @@ export const useAuth = () => {
       setIsAuthenticated(false);
       localStorage.removeItem('session');
     } catch (error) {
-      console.error('Logout error:', error);
     } finally {
       setIsLoading(false);
     }

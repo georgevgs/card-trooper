@@ -20,7 +20,6 @@ export const verifyAccessToken = (token: string): { userId: number } | null => {
   try {
     return jwt.verify(token, JWT_SECRET) as { userId: number };
   } catch (error) {
-    console.error('Access token verification failed:', error);
     return null;
   }
 };
@@ -30,7 +29,6 @@ export const verifyRefreshToken = (token: string): { userId: number } | null => 
     const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as { userId: number };
     return decoded;
   } catch (error) {
-    console.error('Refresh token verification failed:', error);
     return null;
   }
 };
@@ -57,7 +55,6 @@ export const registerUser = async (username: string, email: string, password: st
 
     return result[0].insertedId;
   } catch (error) {
-    console.error('Error registering user:', error);
     return null;
   }
 };

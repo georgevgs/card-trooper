@@ -1,3 +1,5 @@
+import type { StoreCardType } from '@/types/storecard';
+
 export const fetchCards = async (accessToken: string) => {
   const response = await fetch('/api/cards', {
     headers: {
@@ -12,7 +14,7 @@ export const fetchCards = async (accessToken: string) => {
   return response.json();
 };
 
-export const addCard = async (accessToken: string, cardData: any) => {
+export const addCard = async (accessToken: string, cardData: Omit<StoreCardType, 'id'>) => {
   const response = await fetch('/api/cards', {
     method: 'POST',
     headers: {
@@ -26,7 +28,14 @@ export const addCard = async (accessToken: string, cardData: any) => {
     throw new Error('Failed to add card');
   }
 
-  return response.json();
+  const responseData = await response.json();
+
+  const newCard: StoreCardType = {
+    id: responseData.id,
+    ...cardData,
+  };
+
+  return newCard;
 };
 
 export const deleteCard = async (accessToken: string, cardId: number) => {

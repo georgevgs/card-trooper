@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import StoreCard from '@/components/StoreCard';
 import DeleteCardDialog from '@/components/DeleteCardDialog';
 import FullScreenCard from '@/components/FullScreenCard';
@@ -23,14 +23,21 @@ const CardList = ({ cards, onDeleteCard }: CardListProps) => {
   };
 
   const renderCards = () => {
-    return cards.map((card) => (
-      <StoreCard
-        key={card.id}
-        card={card}
-        onCardClick={handleCardClick}
-        onDeleteClick={() => setDeleteCardId(card.id)}
-      />
-    ));
+    return cards
+      .map((card) => {
+        if (!card || typeof card.id === 'undefined') {
+          return null;
+        }
+        return (
+          <StoreCard
+            key={card.id}
+            card={card}
+            onCardClick={handleCardClick}
+            onDeleteClick={() => setDeleteCardId(card.id)}
+          />
+        );
+      })
+      .filter(Boolean);
   };
 
   return (

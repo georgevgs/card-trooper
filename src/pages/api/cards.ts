@@ -29,7 +29,6 @@ export const GET: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error fetching cards:', error);
     return new Response(JSON.stringify({ error: 'Failed to fetch cards' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
@@ -75,7 +74,6 @@ export const POST: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error creating card:', error);
     return new Response(JSON.stringify({ error: 'Failed to create card' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
@@ -111,7 +109,6 @@ export const DELETE: APIRoute = async ({ request }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error deleting card:', error);
     return new Response(JSON.stringify({ error: 'Failed to delete card' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
