@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AddCardForm from './AddCardForm';
 import CardList from './CardList';
+import LoadingSpinner from './LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import * as AuthService from '@/services/AuthService';
 import type { StoreCardType } from '@/types/storecard';
@@ -13,41 +14,52 @@ type MainPageProps = {
 };
 
 const CACHE_KEY = 'cardTrooperCards';
+const AUTH_KEY = 'cardTrooperAuth';
 
-const MainPage = ({ onLogout }: MainPageProps) => {
-  const { isAuthenticated, accessToken, isLoading } = useAuth();
+const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
+  const { isAuthenticated, accessToken, isLoading: authLoading } = useAuth();
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [cards, setCards] = useState<StoreCardType[]>([]);
+  const [isLoadingCards, setIsLoadingCards] = useState(true);
+  const [isAddingCard, setIsAddingCard] = useState(false);
+  const [initialAuthChecked, setInitialAuthChecked] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated && accessToken) {
-      loadCards();
+    const checkInitialAuth = () => {
+      const storedAuth = localStorage.getItem(AUTH_KEY);
+      setInitialAuthChecked(true);
+      return !!storedAuth;
+    };
+
+    if (!authLoading) {
+      if (isAuthenticated) {
+        localStorage.setItem(AUTH_KEY, 'true');
+        loadCards();
+      } else {
+        localStorage.removeItem(AUTH_KEY);
+      }
+    } else if (!initialAuthChecked) {
+      checkInitialAuth();
     }
-  }, [isAuthenticated, accessToken]);
+  }, [isAuthenticated, accessToken, authLoading]);
 
   const loadCards = async () => {
-    if (!accessToken) {
-      return;
-    }
+    if (!accessToken) return;
 
-    // First, try to load cards from cache
+    setIsLoadingCards(true);
     const cachedCards = loadCardsFromCache();
     if (cachedCards.length > 0) {
       setCards(cachedCards);
+      setIsLoadingCards(false);
     }
 
-    // Then, fetch the latest cards from the server
     try {
       const fetchedCards = await AuthService.fetchCards(accessToken);
       setCards(fetchedCards);
-      // Update the cache with the latest data
       saveCardsToCache(fetchedCards);
     } catch (error) {
-      console.error('Failed to fetch cards:', error);
-      // If we failed to fetch, but we have cached data, we'll use that
-      if (cachedCards.length === 0) {
-        setCards(cachedCards);
-      }
+    } finally {
+      setIsLoadingCards(false);
     }
   };
 
@@ -61,9 +73,9 @@ const MainPage = ({ onLogout }: MainPageProps) => {
   };
 
   const handleAddCard = async (newCardData: Omit<StoreCardType, 'id'>) => {
-    if (!accessToken) {
-      return;
-    }
+    if (!accessToken) return;
+
+    setIsAddingCard(true);
     try {
       const addedCard = await AuthService.addCard(accessToken, newCardData);
       setCards((prevCards) => {
@@ -73,14 +85,13 @@ const MainPage = ({ onLogout }: MainPageProps) => {
       });
       setIsAddCardOpen(false);
     } catch (error) {
-      console.error('Failed to add card:', error);
+    } finally {
+      setIsAddingCard(false);
     }
   };
 
   const handleDeleteCard = async (id: number) => {
-    if (!accessToken) {
-      return;
-    }
+    if (!accessToken) return;
 
     try {
       await AuthService.deleteCard(accessToken, id);
@@ -89,17 +100,15 @@ const MainPage = ({ onLogout }: MainPageProps) => {
         saveCardsToCache(updatedCards);
         return updatedCards;
       });
-    } catch (error) {
-      console.error('Failed to delete card:', error);
-    }
+    } catch (error) {}
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  if (authLoading || !initialAuthChecked) {
+    return <LoadingSpinner />;
   }
 
   if (!isAuthenticated) {
-    return <div>Please log in to view this content.</div>;
+    return null; // Return null to avoid showing anything before redirecting to the welcome page
   }
 
   return (
@@ -113,8 +122,15 @@ const MainPage = ({ onLogout }: MainPageProps) => {
             <Button
               onClick={() => setIsAddCardOpen(true)}
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all duration-300 ease-in-out transform hover:scale-105"
+              disabled={isAddingCard}
             >
-              <Plus className="mr-2 h-4 w-4" /> Add Card
+              {isAddingCard ? (
+                <LoadingSpinner />
+              ) : (
+                <>
+                  <Plus className="mr-2 h-4 w-4" /> Add Card
+                </>
+              )}
             </Button>
             <Button
               onClick={onLogout}
@@ -125,7 +141,13 @@ const MainPage = ({ onLogout }: MainPageProps) => {
           </div>
         </header>
         <main className="flex-grow overflow-auto">
-          <CardList cards={cards} onDeleteCard={handleDeleteCard} />
+          {isLoadingCards ? (
+            <div className="flex justify-center items-center h-full">
+              <LoadingSpinner />
+            </div>
+          ) : (
+            <CardList cards={cards} onDeleteCard={handleDeleteCard} />
+          )}
         </main>
         <footer className="mt-6 text-center text-sm text-gray-500">
           © 2024 Card Trooper. All rights reserved.
@@ -136,7 +158,11 @@ const MainPage = ({ onLogout }: MainPageProps) => {
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-900">Add New Card</DialogTitle>
           </DialogHeader>
-          <AddCardForm onAddCard={handleAddCard} onClose={() => setIsAddCardOpen(false)} />
+          <AddCardForm
+            onAddCard={handleAddCard}
+            onClose={() => setIsAddCardOpen(false)}
+            isLoading={isAddingCard}
+          />
         </DialogContent>
       </Dialog>
     </div>

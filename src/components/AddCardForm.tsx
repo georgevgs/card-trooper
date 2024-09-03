@@ -3,14 +3,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import LoadingSpinner from './LoadingSpinner';
 import type { StoreCardType } from '@/types/storecard';
 
 type AddCardFormProps = {
   onAddCard: (card: Omit<StoreCardType, 'id'>) => void;
   onClose: () => void;
+  isLoading: boolean;
 };
 
-const AddCardForm = ({ onAddCard, onClose }: AddCardFormProps) => {
+const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
   const [formState, setFormState] = useState<Omit<StoreCardType, 'id'>>({
     storeName: '',
     cardNumber: '',
@@ -29,12 +31,6 @@ const AddCardForm = ({ onAddCard, onClose }: AddCardFormProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onAddCard(formState);
-    setFormState({
-      storeName: '',
-      cardNumber: '',
-      color: '#6FFFE9',
-      isQRCode: false,
-    });
   };
 
   return (
@@ -47,6 +43,7 @@ const AddCardForm = ({ onAddCard, onClose }: AddCardFormProps) => {
           value={formState.storeName}
           onChange={handleInputChange}
           required
+          disabled={isLoading}
         />
       </div>
       <div className="space-y-2">
@@ -60,6 +57,7 @@ const AddCardForm = ({ onAddCard, onClose }: AddCardFormProps) => {
           value={formState.cardNumber}
           onChange={handleInputChange}
           required
+          disabled={isLoading}
         />
       </div>
       <div className="space-y-2">
@@ -72,6 +70,7 @@ const AddCardForm = ({ onAddCard, onClose }: AddCardFormProps) => {
             value={formState.color}
             onChange={handleInputChange}
             className="w-10 h-10 p-0 rounded"
+            disabled={isLoading}
           />
           <Input
             type="text"
@@ -79,6 +78,7 @@ const AddCardForm = ({ onAddCard, onClose }: AddCardFormProps) => {
             value={formState.color}
             onChange={handleInputChange}
             className="flex-grow"
+            disabled={isLoading}
           />
         </div>
       </div>
@@ -92,14 +92,17 @@ const AddCardForm = ({ onAddCard, onClose }: AddCardFormProps) => {
               target: { name: 'isQRCode', type: 'checkbox', checked },
             } as React.ChangeEvent<HTMLInputElement>)
           }
+          disabled={isLoading}
         />
         <Label htmlFor="isQRCode">Use QR Code</Label>
       </div>
       <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={onClose}>
+        <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
           Cancel
         </Button>
-        <Button type="submit">Add Card</Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? <LoadingSpinner /> : 'Add Card'}
+        </Button>
       </div>
     </form>
   );
