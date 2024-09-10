@@ -1,5 +1,5 @@
-const CACHE_NAME = 'card-trooper-cache-v1';
-const DYNAMIC_CACHE_NAME = 'card-trooper-dynamic-cache-v1';
+const CACHE_NAME = 'card-trooper-cache-v2';
+const DYNAMIC_CACHE_NAME = 'card-trooper-dynamic-cache-v2';
 
 const urlsToCache = [
   '/',
@@ -10,6 +10,8 @@ const urlsToCache = [
   '/assets/main.js',
   '/favicon/favicon.ico',
   '/favicon/apple-touch-icon.png',
+  '/app.js',
+  '/app.css',
 ];
 
 self.addEventListener('install', (event) => {
@@ -58,59 +60,38 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (event.request.url.includes('/api/')) {
-    // For API GET requests, try the network first, then fall back to cache
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
+  event.respondWith(
+    caches
+      .match(event.request)
+      .then((response) => {
+        if (response) {
+          return response; // If found in cache, return the cached version
+        }
+
+        // If not in cache, fetch from network
+        return fetch(event.request).then((fetchResponse) => {
+          // Check if we received a valid response
+          if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
+            return fetchResponse;
+          }
+
           // Clone the response because we're going to use it twice
-          const responseToCache = response.clone();
+          const responseToCache = fetchResponse.clone();
 
           caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
           });
 
-          return response;
-        })
-        .catch(() => {
-          return caches.match(event.request);
-        }),
-    );
-  } else {
-    // For non-API requests, try the cache first, then fall back to network
-    event.respondWith(
-      caches
-        .match(event.request)
-        .then((response) => {
-          if (response) {
-            return response; // If found in cache, return the cached version
-          }
-
-          // If not in cache, fetch from network
-          return fetch(event.request).then((fetchResponse) => {
-            // Check if we received a valid response
-            if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
-              return fetchResponse;
-            }
-
-            // Clone the response because we're going to use it twice
-            const responseToCache = fetchResponse.clone();
-
-            caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-
-            return fetchResponse;
-          });
-        })
-        .catch(() => {
-          // If both cache and network fail, show an offline page for navigate requests
-          if (event.request.mode === 'navigate') {
-            return caches.match('/offline.html');
-          }
-        }),
-    );
-  }
+          return fetchResponse;
+        });
+      })
+      .catch(() => {
+        // If both cache and network fail, show an offline page for navigate requests
+        if (event.request.mode === 'navigate') {
+          return caches.match('/offline.html');
+        }
+      }),
+  );
 });
 
 self.addEventListener('message', (event) => {

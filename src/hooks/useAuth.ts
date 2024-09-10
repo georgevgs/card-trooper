@@ -3,20 +3,16 @@ import * as AuthService from '@/services/AuthService';
 
 const AUTH_CACHE_KEY = 'cardTrooperAuthCache';
 
-const isBrowser = typeof window !== 'undefined';
-
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const updateAuthCache = useCallback((isAuth: boolean, token: string | null) => {
-    if (isBrowser) {
-      localStorage.setItem(
-        AUTH_CACHE_KEY,
-        JSON.stringify({ isAuthenticated: isAuth, accessToken: token }),
-      );
-    }
+    localStorage.setItem(
+      AUTH_CACHE_KEY,
+      JSON.stringify({ isAuthenticated: isAuth, accessToken: token }),
+    );
   }, []);
 
   const refreshAccessToken = useCallback(async () => {
@@ -27,23 +23,20 @@ export const useAuth = () => {
       updateAuthCache(true, newAccessToken);
       return true;
     } catch (error) {
-      setIsAuthenticated(false);
-      setAccessToken(null);
-      updateAuthCache(false, null);
+      console.error('Failed to refresh token:', error);
       return false;
     }
   }, [updateAuthCache]);
 
   useEffect(() => {
     const initAuth = async () => {
-      if (isBrowser) {
-        const cached = localStorage.getItem(AUTH_CACHE_KEY);
-        if (cached) {
-          const { isAuthenticated: cachedIsAuth, accessToken: cachedToken } = JSON.parse(cached);
-          if (cachedIsAuth && cachedToken) {
-            setIsAuthenticated(true);
-            setAccessToken(cachedToken);
-            // Still try to refresh the token
+      const cached = localStorage.getItem(AUTH_CACHE_KEY);
+      if (cached) {
+        const { isAuthenticated: cachedIsAuth, accessToken: cachedToken } = JSON.parse(cached);
+        if (cachedIsAuth && cachedToken) {
+          setIsAuthenticated(true);
+          setAccessToken(cachedToken);
+          if (navigator.onLine) {
             await refreshAccessToken();
           }
         }
@@ -62,6 +55,7 @@ export const useAuth = () => {
       setIsAuthenticated(true);
       updateAuthCache(true, accessToken);
     } catch (error) {
+      console.error('Login failed:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -74,19 +68,24 @@ export const useAuth = () => {
       await AuthService.register(username, email, password);
       await handleLogin(email, password);
     } catch (error) {
-      setIsLoading(false);
+      console.error('Registration failed:', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      await AuthService.logout();
+      if (navigator.onLine) {
+        await AuthService.logout();
+      }
       setAccessToken(null);
       setIsAuthenticated(false);
       updateAuthCache(false, null);
     } catch (error) {
+      console.error('Logout failed:', error);
     } finally {
       setIsLoading(false);
     }

@@ -23,7 +23,6 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   const [isLoadingCards, setIsLoadingCards] = useState<boolean>(true);
   const [isAddingCard, setIsAddingCard] = useState<boolean>(false);
   const [isOffline, setIsOffline] = useState<boolean>(!navigator.onLine);
-  const [initialAuthChecked, setInitialAuthChecked] = useState<boolean>(false);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -39,49 +38,26 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   }, []);
 
   useEffect(() => {
-    const checkInitialAuth = () => {
-      const storedAuth = localStorage.getItem(AUTH_KEY);
-      setInitialAuthChecked(true);
-      return !!storedAuth;
-    };
-
-    if (!authLoading) {
-      if (isAuthenticated) {
-        localStorage.setItem(AUTH_KEY, 'true');
-        loadCards();
-      } else {
-        localStorage.removeItem(AUTH_KEY);
-      }
-    } else if (!initialAuthChecked) {
-      checkInitialAuth();
+    if (isAuthenticated) {
+      loadCards();
     }
-  }, [isAuthenticated, accessToken, authLoading]);
+  }, [isAuthenticated, accessToken]);
 
   const loadCards = async () => {
-    if (!accessToken) {
-      return;
-    }
-
     setIsLoadingCards(true);
     const cachedCards = loadCardsFromCache();
-    if (cachedCards.length > 0) {
-      setCards(cachedCards);
-      setIsLoadingCards(false);
-    }
+    setCards(cachedCards);
 
-    if (navigator.onLine) {
+    if (navigator.onLine && accessToken) {
       try {
         const fetchedCards = await AuthService.fetchCards(accessToken);
         setCards(fetchedCards);
         saveCardsToCache(fetchedCards);
       } catch (error) {
         console.error('Failed to fetch cards:', error);
-      } finally {
-        setIsLoadingCards(false);
       }
-    } else {
-      setIsLoadingCards(false);
     }
+    setIsLoadingCards(false);
   };
 
   const loadCardsFromCache = (): StoreCardType[] => {
@@ -94,13 +70,9 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   };
 
   const handleAddCard = async (newCardData: Omit<StoreCardType, 'id'>) => {
-    if (!accessToken) {
-      return;
-    }
-
     setIsAddingCard(true);
     try {
-      if (navigator.onLine) {
+      if (navigator.onLine && accessToken) {
         const addedCard = await AuthService.addCard(accessToken, newCardData);
         setCards((prevCards) => {
           const updatedCards = [...prevCards, addedCard];
@@ -126,12 +98,8 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   };
 
   const handleDeleteCard = async (id: number) => {
-    if (!accessToken) {
-      return;
-    }
-
     try {
-      if (navigator.onLine) {
+      if (navigator.onLine && accessToken) {
         await AuthService.deleteCard(accessToken, id);
       }
       setCards((prevCards) => {
@@ -144,16 +112,12 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     }
   };
 
-  if (authLoading || !initialAuthChecked) {
+  if (authLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <LoadingSpinner />
       </div>
     );
-  }
-
-  if (!isAuthenticated) {
-    return null;
   }
 
   return (
