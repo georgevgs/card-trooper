@@ -1,6 +1,6 @@
 import type { StoreCardType } from '@/types/storecard';
 
-export const fetchCards = async (accessToken: string) => {
+export const fetchCards = async (accessToken: string): Promise<StoreCardType[]> => {
   const response = await fetch('/api/cards', {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -14,7 +14,10 @@ export const fetchCards = async (accessToken: string) => {
   return response.json();
 };
 
-export const addCard = async (accessToken: string, cardData: Omit<StoreCardType, 'id'>) => {
+export const addCard = async (
+  accessToken: string,
+  cardData: Omit<StoreCardType, 'id'>,
+): Promise<StoreCardType> => {
   const response = await fetch('/api/cards', {
     method: 'POST',
     headers: {
@@ -38,7 +41,7 @@ export const addCard = async (accessToken: string, cardData: Omit<StoreCardType,
   return newCard;
 };
 
-export const deleteCard = async (accessToken: string, cardId: number) => {
+export const deleteCard = async (accessToken: string, cardId: number): Promise<void> => {
   const response = await fetch('/api/cards', {
     method: 'DELETE',
     headers: {
@@ -51,8 +54,6 @@ export const deleteCard = async (accessToken: string, cardId: number) => {
   if (!response.ok) {
     throw new Error('Failed to delete card');
   }
-
-  return response.json();
 };
 
 export const login = async (email: string, password: string): Promise<{ accessToken: string }> => {

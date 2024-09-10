@@ -6,11 +6,12 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 
 const App: React.FC = () => {
   const { isAuthenticated, isLoading, handleLogin, handleRegister, handleLogout } = useAuth();
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
+  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
+  const [showReload, setShowReload] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isLoading) {
-      // Set a small timeout to ensure smooth transition
       const timer = setTimeout(() => {
         setIsInitialLoad(false);
       }, 100);
@@ -20,18 +21,42 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/service-worker.js')
-          .then((registration) => {
-            console.log('Service Worker registered with scope:', registration.scope);
-          })
-          .catch((error) => {
-            console.error('Service Worker registration failed:', error);
+      navigator.serviceWorker
+        .register('/service-worker.js')
+        .then((registration) => {
+          console.log('Service Worker registered with scope:', registration.scope);
+
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            console.log('Service Worker update found!');
+
+            newWorker?.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                setWaitingWorker(newWorker);
+                setShowReload(true);
+              }
+            });
           });
+        })
+        .catch((error) => {
+          console.error('Service Worker registration failed:', error);
+        });
+
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          window.location.reload();
+          refreshing = true;
+        }
       });
     }
   }, []);
+
+  const reloadPage = () => {
+    waitingWorker?.postMessage({ type: 'SKIP_WAITING' });
+    setShowReload(false);
+    window.location.reload();
+  };
 
   if (isInitialLoad || isLoading) {
     return (
@@ -43,6 +68,14 @@ const App: React.FC = () => {
 
   return (
     <>
+      {showReload && (
+        <div className="fixed top-0 left-0 right-0 bg-blue-500 text-white p-2 text-center">
+          <p>A new version is available!</p>
+          <button onClick={reloadPage} className="bg-white text-blue-500 px-4 py-2 rounded mt-2">
+            Reload
+          </button>
+        </div>
+      )}
       {isAuthenticated ? (
         <MainPage onLogout={handleLogout} />
       ) : (
@@ -51,7 +84,9 @@ const App: React.FC = () => {
           onRegister={async (...args) => {
             try {
               await handleRegister(...args);
-            } catch (error) {}
+            } catch (error) {
+              console.error('Registration failed:', error);
+            }
           }}
         />
       )}

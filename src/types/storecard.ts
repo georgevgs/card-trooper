@@ -4,4 +4,5 @@ export type StoreCardType = {
   cardNumber: string;
   color: string;
   isQRCode: boolean;
+  isOffline?: boolean;
 };

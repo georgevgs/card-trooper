@@ -52,8 +52,14 @@ self.addEventListener('fetch', (event) => {
     return; // Ignore chrome-extension and other extension requests
   }
 
+  if (event.request.method !== 'GET') {
+    // For non-GET requests, go to the network
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   if (event.request.url.includes('/api/')) {
-    // For API requests, try the network first, then fall back to cache
+    // For API GET requests, try the network first, then fall back to cache
     event.respondWith(
       fetch(event.request)
         .then((response) => {

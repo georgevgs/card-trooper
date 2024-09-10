@@ -9,20 +9,34 @@ import { useAuth } from '@/hooks/useAuth';
 import * as AuthService from '@/services/AuthService';
 import type { StoreCardType } from '@/types/storecard';
 
-type MainPageProps = {
-  onLogout: () => Promise<void>;
-};
-
 const CACHE_KEY = 'cardTrooperCards';
 const AUTH_KEY = 'cardTrooperAuth';
 
+interface MainPageProps {
+  onLogout: () => Promise<void>;
+}
+
 const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   const { isAuthenticated, accessToken, isLoading: authLoading } = useAuth();
-  const [isAddCardOpen, setIsAddCardOpen] = useState(false);
+  const [isAddCardOpen, setIsAddCardOpen] = useState<boolean>(false);
   const [cards, setCards] = useState<StoreCardType[]>([]);
-  const [isLoadingCards, setIsLoadingCards] = useState(true);
-  const [isAddingCard, setIsAddingCard] = useState(false);
-  const [initialAuthChecked, setInitialAuthChecked] = useState(false);
+  const [isLoadingCards, setIsLoadingCards] = useState<boolean>(true);
+  const [isAddingCard, setIsAddingCard] = useState<boolean>(false);
+  const [isOffline, setIsOffline] = useState<boolean>(!navigator.onLine);
+  const [initialAuthChecked, setInitialAuthChecked] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     const checkInitialAuth = () => {
@@ -44,7 +58,9 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   }, [isAuthenticated, accessToken, authLoading]);
 
   const loadCards = async () => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      return;
+    }
 
     setIsLoadingCards(true);
     const cachedCards = loadCardsFromCache();
@@ -53,12 +69,17 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
       setIsLoadingCards(false);
     }
 
-    try {
-      const fetchedCards = await AuthService.fetchCards(accessToken);
-      setCards(fetchedCards);
-      saveCardsToCache(fetchedCards);
-    } catch (error) {
-    } finally {
+    if (navigator.onLine) {
+      try {
+        const fetchedCards = await AuthService.fetchCards(accessToken);
+        setCards(fetchedCards);
+        saveCardsToCache(fetchedCards);
+      } catch (error) {
+        console.error('Failed to fetch cards:', error);
+      } finally {
+        setIsLoadingCards(false);
+      }
+    } else {
       setIsLoadingCards(false);
     }
   };
@@ -73,42 +94,66 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   };
 
   const handleAddCard = async (newCardData: Omit<StoreCardType, 'id'>) => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      return;
+    }
 
     setIsAddingCard(true);
     try {
-      const addedCard = await AuthService.addCard(accessToken, newCardData);
-      setCards((prevCards) => {
-        const updatedCards = [...prevCards, addedCard];
-        saveCardsToCache(updatedCards);
-        return updatedCards;
-      });
+      if (navigator.onLine) {
+        const addedCard = await AuthService.addCard(accessToken, newCardData);
+        setCards((prevCards) => {
+          const updatedCards = [...prevCards, addedCard];
+          saveCardsToCache(updatedCards);
+          return updatedCards;
+        });
+      } else {
+        // Offline mode: add card locally
+        const tempId = Date.now(); // Use timestamp as temporary ID
+        const offlineCard: StoreCardType = { ...newCardData, id: tempId, isOffline: true };
+        setCards((prevCards) => {
+          const updatedCards = [...prevCards, offlineCard];
+          saveCardsToCache(updatedCards);
+          return updatedCards;
+        });
+      }
       setIsAddCardOpen(false);
     } catch (error) {
+      console.error('Failed to add card:', error);
     } finally {
       setIsAddingCard(false);
     }
   };
 
   const handleDeleteCard = async (id: number) => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      return;
+    }
 
     try {
-      await AuthService.deleteCard(accessToken, id);
+      if (navigator.onLine) {
+        await AuthService.deleteCard(accessToken, id);
+      }
       setCards((prevCards) => {
         const updatedCards = prevCards.filter((card) => card.id !== id);
         saveCardsToCache(updatedCards);
         return updatedCards;
       });
-    } catch (error) {}
+    } catch (error) {
+      console.error('Failed to delete card:', error);
+    }
   };
 
   if (authLoading || !initialAuthChecked) {
-    return <LoadingSpinner />;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
-    return null; // Return null to avoid showing anything before redirecting to the welcome page
+    return null;
   }
 
   return (
@@ -146,7 +191,18 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
               <LoadingSpinner />
             </div>
           ) : (
-            <CardList cards={cards} onDeleteCard={handleDeleteCard} />
+            <>
+              {isOffline && (
+                <div
+                  className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4"
+                  role="alert"
+                >
+                  <p className="font-bold">You are offline</p>
+                  <p>Some features may be limited until you reconnect.</p>
+                </div>
+              )}
+              <CardList cards={cards} onDeleteCard={handleDeleteCard} />
+            </>
           )}
         </main>
         <footer className="mt-6 text-center text-sm text-gray-500">
