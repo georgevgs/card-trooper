@@ -22,6 +22,7 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   const [isLoadingCards, setIsLoadingCards] = useState<boolean>(true);
   const [isAddingCard, setIsAddingCard] = useState<boolean>(false);
   const [isOffline, setIsOffline] = useState<boolean>(!navigator.onLine);
+  const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -119,6 +120,10 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     isOffline: true,
   });
 
+  const toggleSearch = () => {
+    setIsSearchVisible(!isSearchVisible);
+  };
+
   if (authLoading) {
     return <LoadingScreen />;
   }
@@ -129,6 +134,7 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
         <Header
           onAddCard={() => setIsAddCardOpen(true)}
           onLogout={onLogout}
+          onToggleSearch={toggleSearch}
           isAddingCard={isAddingCard}
         />
         <main className="flex-grow overflow-auto">
@@ -137,7 +143,11 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
           ) : (
             <>
               <OfflineAlert isOffline={isOffline} />
-              <CardList cards={cards} onDeleteCard={handleDeleteCard} />
+              <CardList
+                cards={cards}
+                onDeleteCard={handleDeleteCard}
+                isSearchVisible={isSearchVisible}
+              />
             </>
           )}
         </main>
