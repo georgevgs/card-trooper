@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import type { StoreCard } from '@/types/storecard';
+import type { StoreCardType } from '@/types/storecard';
 
-export const useAddCardForm = (onAddCard: (card: StoreCard) => void) => {
-  const [formState, setFormState] = useState<StoreCard>({
+export const useAddCardForm = (onAddCard: (card: Omit<StoreCardType, 'id'>) => void) => {
+  const [formState, setFormState] = useState<Omit<StoreCardType, 'id'>>({
     storeName: '',
     cardNumber: '',
     color: '#6FFFE9',
@@ -33,7 +33,7 @@ export const useAddCardForm = (onAddCard: (card: StoreCard) => void) => {
   };
 
   const updateFormState = (name: string, value: string | boolean) => {
-    setFormState((prev) => ({
+    setFormState((prev: Omit<StoreCardType, 'id'>) => ({
       ...prev,
       [name]: value,
     }));

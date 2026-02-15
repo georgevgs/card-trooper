@@ -56,12 +56,14 @@ export const deleteCard = async (accessToken: string, cardId: number): Promise<v
   }
 };
 
-export const login = async (email: string, password: string): Promise<{ accessToken: string }> => {
+export const login = async (
+  email: string,
+  password: string,
+): Promise<{ accessToken: string; refreshToken: string }> => {
   const response = await fetch('/api/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
-    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -75,36 +77,50 @@ export const register = async (
   username: string,
   email: string,
   password: string,
-): Promise<void> => {
+): Promise<{
+  success: boolean;
+  emailConfirmationRequired: boolean;
+  accessToken?: string;
+  refreshToken?: string;
+  message?: string;
+}> => {
   const response = await fetch('/api/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, email, password }),
-    credentials: 'include',
   });
 
   if (!response.ok) {
-    throw new Error('Registration failed');
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Registration failed');
   }
+
+  return response.json();
 };
 
-export const refreshToken = async (): Promise<string> => {
+export const refreshToken = async (
+  refreshToken: string,
+): Promise<{ accessToken: string; refreshToken: string }> => {
   const response = await fetch('/api/refresh-token', {
     method: 'POST',
-    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken }),
   });
 
   if (!response.ok) {
     throw new Error('Token refresh failed');
   }
 
-  const { accessToken } = await response.json();
-  return accessToken;
+  return response.json();
 };
 
-export const logout = async (): Promise<void> => {
+export const logout = async (accessToken: string | null): Promise<void> => {
   await fetch('/api/logout', {
     method: 'POST',
-    credentials: 'include',
+    headers: accessToken
+      ? {
+          Authorization: `Bearer ${accessToken}`,
+        }
+      : {},
   });
 };

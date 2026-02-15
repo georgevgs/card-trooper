@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
-import { db, Users, eq } from 'astro:db';
-import { hashPassword, generateTokens } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -14,41 +13,60 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // Check if user already exists
-    const existingUser = await db.select().from(Users).where(eq(Users.email, email)).limit(1);
-    if (existingUser.length > 0) {
-      return new Response(JSON.stringify({ error: 'User already exists' }), {
-        status: 409,
+    // Sign up with Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          username, // Store username in user metadata
+        },
+      },
+    });
+
+    if (error) {
+      // Handle specific Supabase errors
+      if (error.message.includes('already registered')) {
+        return new Response(JSON.stringify({ error: 'User already exists' }), {
+          status: 409,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // Hash the password
-    const hashedPassword = await hashPassword(password);
+    // If email confirmation is enabled, session will be null
+    if (!data.session) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          emailConfirmationRequired: true,
+          message: 'Please check your email to confirm your account',
+        }),
+        {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
-    // Insert the new user into the database
-    const result = await db
-      .insert(Users)
-      .values({
-        username,
-        email,
-        passwordHash: hashedPassword,
-      })
-      .returning({ insertedId: Users.id });
-
-    if (result && result[0]?.insertedId) {
-      // Generate tokens for the new user
-      const { accessToken, refreshToken } = generateTokens(result[0].insertedId);
-
-      return new Response(JSON.stringify({ success: true, accessToken, refreshToken }), {
+    return new Response(
+      JSON.stringify({
+        success: true,
+        emailConfirmationRequired: false,
+        accessToken: data.session.access_token,
+        refreshToken: data.session.refresh_token,
+      }),
+      {
         status: 201,
         headers: { 'Content-Type': 'application/json' },
-      });
-    } else {
-      throw new Error('Failed to insert user');
-    }
+      }
+    );
   } catch (error) {
-    // Determine if it's a known error or an unexpected one
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
 
     return new Response(JSON.stringify({ error: errorMessage }), {

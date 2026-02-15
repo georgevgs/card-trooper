@@ -1,30 +1,38 @@
 import type { APIRoute } from 'astro';
-import { db, Cards, eq, and } from 'astro:db';
-import { verifyAccessToken } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
+import { getUserIdFromRequest } from '@/lib/auth';
 
 export const GET: APIRoute = async ({ request }) => {
-  const authHeader = request.headers.get('Authorization');
+  const userId = await getUserIdFromRequest(request);
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return new Response(JSON.stringify({ error: 'No token provided' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  const token = authHeader.split(' ')[1];
-  const payload = verifyAccessToken(token);
-
-  if (!payload) {
-    return new Response(JSON.stringify({ error: 'Invalid token' }), {
+  if (!userId) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
   try {
-    const cards = await db.select().from(Cards).where(eq(Cards.userId, payload.userId));
-    return new Response(JSON.stringify(cards), {
+    const { data: cards, error } = await supabase
+      .from('cards')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (error) {
+      throw error;
+    }
+
+    // Map snake_case columns to camelCase for frontend compatibility
+    const mappedCards = cards.map((card) => ({
+      id: card.id,
+      userId: card.user_id,
+      storeName: card.store_name,
+      cardNumber: card.card_number,
+      color: card.color,
+      isQRCode: card.is_qr_code,
+    }));
+
+    return new Response(JSON.stringify(mappedCards), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -37,20 +45,10 @@ export const GET: APIRoute = async ({ request }) => {
 };
 
 export const POST: APIRoute = async ({ request }) => {
-  const authHeader = request.headers.get('Authorization');
+  const userId = await getUserIdFromRequest(request);
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return new Response(JSON.stringify({ error: 'No token provided' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  const token = authHeader.split(' ')[1];
-  const payload = verifyAccessToken(token);
-
-  if (!payload) {
-    return new Response(JSON.stringify({ error: 'Invalid token' }), {
+  if (!userId) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -58,18 +56,24 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const { storeName, cardNumber, color, isQRCode } = await request.json();
-    const result = await db
-      .insert(Cards)
-      .values({
-        userId: payload.userId,
-        storeName,
-        cardNumber,
-        color,
-        isQRCode,
-      })
-      .returning({ insertedId: Cards.id });
 
-    return new Response(JSON.stringify({ id: result[0].insertedId }), {
+    const { data, error } = await supabase
+      .from('cards')
+      .insert({
+        user_id: userId,
+        store_name: storeName,
+        card_number: cardNumber,
+        color: color,
+        is_qr_code: isQRCode,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return new Response(JSON.stringify({ id: data.id }), {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -82,20 +86,10 @@ export const POST: APIRoute = async ({ request }) => {
 };
 
 export const DELETE: APIRoute = async ({ request }) => {
-  const authHeader = request.headers.get('Authorization');
+  const userId = await getUserIdFromRequest(request);
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return new Response(JSON.stringify({ error: 'No token provided' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  const token = authHeader.split(' ')[1];
-  const payload = verifyAccessToken(token);
-
-  if (!payload) {
-    return new Response(JSON.stringify({ error: 'Invalid token' }), {
+  if (!userId) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -103,7 +97,17 @@ export const DELETE: APIRoute = async ({ request }) => {
 
   try {
     const { id } = await request.json();
-    await db.delete(Cards).where(and(eq(Cards.id, id), eq(Cards.userId, payload.userId)));
+
+    const { error } = await supabase
+      .from('cards')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+
+    if (error) {
+      throw error;
+    }
+
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

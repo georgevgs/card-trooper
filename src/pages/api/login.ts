@@ -1,29 +1,40 @@
 import type { APIRoute } from 'astro';
-import { loginUser, generateTokens } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
-export const POST: APIRoute = async ({ request, cookies }) => {
-  const { email, password } = await request.json();
-
+export const POST: APIRoute = async ({ request }) => {
   try {
-    const userId = await loginUser(email, password);
-    if (!userId) {
-      throw new Error('Invalid credentials');
+    const { email, password } = await request.json();
+
+    if (!email || !password) {
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
-    const { accessToken, refreshToken } = generateTokens(userId);
-
-    cookies.set('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: import.meta.env.PROD,
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+    // Sign in with Supabase Auth
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
 
-    return new Response(JSON.stringify({ accessToken }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (error || !data.session) {
+      return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(
+      JSON.stringify({
+        accessToken: data.session.access_token,
+        refreshToken: data.session.refresh_token,
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
       status: 401,
