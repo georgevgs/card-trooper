@@ -69,17 +69,20 @@ const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
       </div>
       <div className="space-y-2">
         <Label htmlFor="color">Card Color</Label>
-        <div className="flex items-center space-x-2">
-          <Input
-            type="color"
-            id="color"
-            name="color"
-            value={formState.color}
-            onChange={handleInputChange}
-            className="w-10 h-10 p-0 rounded cursor-pointer"
-            disabled={isLoading}
-            aria-label="Pick card color"
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Input
+              type="color"
+              id="color"
+              name="color"
+              value={formState.color}
+              onChange={handleInputChange}
+              className="w-16 h-16 sm:w-12 sm:h-12 p-1 rounded-lg cursor-pointer border-2 border-gray-300"
+              disabled={isLoading}
+              aria-label="Pick card color"
+              style={{ colorScheme: 'light' }}
+            />
+          </div>
           <Input
             type="text"
             name="color"
@@ -87,11 +90,13 @@ const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
             onChange={handleInputChange}
             pattern="^#[0-9A-Fa-f]{6}$"
             placeholder="#6FFFE9"
-            className="flex-grow"
+            maxLength={7}
+            className="flex-grow uppercase"
             disabled={isLoading}
             aria-label="Enter color hex code"
           />
         </div>
+        <p className="text-xs text-gray-500">Tap the color square to pick a color</p>
       </div>
       <div className="flex items-center space-x-2">
         <Switch
