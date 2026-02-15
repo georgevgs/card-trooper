@@ -28,9 +28,16 @@ const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onAddCard(formState);
+    e.stopPropagation();
+
+    // Validate form
+    if (!formState.storeName || !formState.cardNumber) {
+      return;
+    }
+
+    await onAddCard(formState);
   };
 
   return (
@@ -69,16 +76,20 @@ const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
             name="color"
             value={formState.color}
             onChange={handleInputChange}
-            className="w-10 h-10 p-0 rounded"
+            className="w-10 h-10 p-0 rounded cursor-pointer"
             disabled={isLoading}
+            aria-label="Pick card color"
           />
           <Input
             type="text"
             name="color"
             value={formState.color}
             onChange={handleInputChange}
+            pattern="^#[0-9A-Fa-f]{6}$"
+            placeholder="#6FFFE9"
             className="flex-grow"
             disabled={isLoading}
+            aria-label="Enter color hex code"
           />
         </div>
       </div>
