@@ -24,12 +24,8 @@ const App: React.FC = () => {
       navigator.serviceWorker
         .register('/service-worker.js')
         .then((registration) => {
-          console.log('Service Worker registered with scope:', registration.scope);
-
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
-            console.log('Service Worker update found!');
-
             newWorker?.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 setWaitingWorker(newWorker);
@@ -60,7 +56,7 @@ const App: React.FC = () => {
 
   if (isInitialLoad || isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen bg-[#F2F2F7]">
         <LoadingSpinner />
       </div>
     );
@@ -69,26 +65,20 @@ const App: React.FC = () => {
   return (
     <>
       {showReload && (
-        <div className="fixed top-0 left-0 right-0 bg-blue-500 text-white p-2 text-center">
-          <p>A new version is available!</p>
-          <button onClick={reloadPage} className="bg-white text-blue-500 px-4 py-2 rounded mt-2">
-            Reload
+        <div className="fixed top-0 left-0 right-0 bg-[#007AFF] text-white px-4 py-3 text-center z-50 flex items-center justify-center gap-3">
+          <span className="text-sm font-medium">A new version is available</span>
+          <button
+            onClick={reloadPage}
+            className="bg-white text-[#007AFF] text-sm font-semibold px-3 py-1 rounded-full"
+          >
+            Update
           </button>
         </div>
       )}
       {isAuthenticated ? (
         <MainPage onLogout={handleLogout} />
       ) : (
-        <WelcomePage
-          onLogin={handleLogin}
-          onRegister={async (...args) => {
-            try {
-              await handleRegister(...args);
-            } catch (error) {
-              console.error('Registration failed:', error);
-            }
-          }}
-        />
+        <WelcomePage onLogin={handleLogin} onRegister={handleRegister} />
       )}
     </>
   );

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Plus, LogOut, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import LoadingSpinner from './LoadingSpinner';
 
 interface HeaderProps {
@@ -12,40 +11,42 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onAddCard, onLogout, onToggleSearch, isAddingCard }) => {
   return (
-    <header className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+    <header className="flex justify-between items-center mb-6 pt-safe">
+      {/* Left: Logout */}
+      <button
+        onClick={onLogout}
+        className="w-9 h-9 flex items-center justify-center text-[#007AFF] rounded-full active:bg-[#007AFF]/10 transition-colors"
+        aria-label="Sign out"
+      >
+        <LogOut className="w-[18px] h-[18px]" />
+      </button>
+
+      {/* Center: Title */}
+      <h1 className="text-[17px] font-semibold text-[#1C1C1E] tracking-tight">
         Card Trooper
       </h1>
-      <div className="flex items-center space-x-2">
-        <Button
+
+      {/* Right: Actions */}
+      <div className="flex items-center gap-1">
+        <button
           onClick={onToggleSearch}
-          variant="outline"
-          className="bg-white hover:bg-gray-100 text-purple-600 transition-all duration-300 ease-in-out transform hover:scale-105 w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-2"
+          className="w-9 h-9 flex items-center justify-center text-[#007AFF] rounded-full active:bg-[#007AFF]/10 transition-colors"
+          aria-label="Search"
         >
-          <Search className="h-6 w-6 sm:h-5 sm:w-5 sm:mr-2" />
-          <span className="hidden sm:inline">Search</span>
-        </Button>
-        <Button
+          <Search className="w-[18px] h-[18px]" />
+        </button>
+        <button
           onClick={onAddCard}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all duration-300 ease-in-out transform hover:scale-105 w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-2"
           disabled={isAddingCard}
+          className="w-9 h-9 flex items-center justify-center text-[#007AFF] rounded-full active:bg-[#007AFF]/10 transition-colors disabled:opacity-40"
+          aria-label="Add card"
         >
           {isAddingCard ? (
             <LoadingSpinner />
           ) : (
-            <>
-              <Plus className="h-6 w-6 sm:h-5 sm:w-5 sm:mr-2" />
-              <span className="hidden sm:inline">Add Card</span>
-            </>
+            <Plus className="w-[22px] h-[22px]" strokeWidth={2} />
           )}
-        </Button>
-        <Button
-          onClick={onLogout}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-bold transition-all duration-300 ease-in-out transform hover:scale-105 w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-2"
-        >
-          <LogOut className="h-6 w-6 sm:h-5 sm:w-5 sm:mr-2" />
-          <span className="hidden sm:inline">Logout</span>
-        </Button>
+        </button>
       </div>
     </header>
   );

@@ -1,121 +1,122 @@
 import type { APIRoute } from 'astro';
-import { supabase } from '@/lib/supabase';
-import { getUserIdFromRequest } from '@/lib/auth';
+import { z } from 'zod';
+import { createAuth } from '@/lib/auth';
+import { createDb } from '@/db/index';
+import { cards } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
 
-export const GET: APIRoute = async ({ request }) => {
-  const userId = await getUserIdFromRequest(request);
+const cardSchema = z.object({
+  storeName: z.string().min(1).max(100),
+  cardNumber: z.string().min(1).max(200),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  isQRCode: z.boolean(),
+});
 
-  if (!userId) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+export const GET: APIRoute = async ({ request, locals }) => {
+  const { DB, BETTER_AUTH_SECRET, BETTER_AUTH_URL } = locals.runtime.env;
+  const auth = createAuth(DB, BETTER_AUTH_SECRET, [BETTER_AUTH_URL]);
+  const session = await auth.api.getSession({ headers: request.headers });
+
+  if (!session?.user) {
+    return json({ error: 'Unauthorized' }, 401);
   }
 
   try {
-    const { data: cards, error } = await supabase
-      .from('cards')
-      .select('*')
-      .eq('user_id', userId);
+    const db = createDb(DB);
+    const rows = await db.select().from(cards).where(eq(cards.userId, session.user.id));
 
-    if (error) {
-      throw error;
-    }
-
-    // Map snake_case columns to camelCase for frontend compatibility
-    const mappedCards = cards.map((card) => ({
+    const result = rows.map((card) => ({
       id: card.id,
-      userId: card.user_id,
-      storeName: card.store_name,
-      cardNumber: card.card_number,
+      userId: card.userId,
+      storeName: card.storeName,
+      cardNumber: card.cardNumber,
       color: card.color,
-      isQRCode: card.is_qr_code,
+      isQRCode: card.isQRCode,
     }));
 
-    return new Response(JSON.stringify(mappedCards), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to fetch cards' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return json(result);
+  } catch {
+    return json({ error: 'Failed to fetch cards' }, 500);
   }
 };
 
-export const POST: APIRoute = async ({ request }) => {
-  const userId = await getUserIdFromRequest(request);
+export const POST: APIRoute = async ({ request, locals }) => {
+  const { DB, BETTER_AUTH_SECRET, BETTER_AUTH_URL } = locals.runtime.env;
+  const auth = createAuth(DB, BETTER_AUTH_SECRET, [BETTER_AUTH_URL]);
+  const session = await auth.api.getSession({ headers: request.headers });
 
-  if (!userId) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  if (!session?.user) {
+    return json({ error: 'Unauthorized' }, 401);
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: 'Invalid JSON' }, 400);
+  }
+
+  const parsed = cardSchema.safeParse(body);
+  if (!parsed.success) {
+    return json({ error: parsed.error.flatten() }, 400);
   }
 
   try {
-    const { storeName, cardNumber, color, isQRCode } = await request.json();
-
-    const { data, error } = await supabase
-      .from('cards')
-      .insert({
-        user_id: userId,
-        store_name: storeName,
-        card_number: cardNumber,
-        color: color,
-        is_qr_code: isQRCode,
+    const db = createDb(DB);
+    const [inserted] = await db
+      .insert(cards)
+      .values({
+        userId: session.user.id,
+        storeName: parsed.data.storeName,
+        cardNumber: parsed.data.cardNumber,
+        color: parsed.data.color,
+        isQRCode: parsed.data.isQRCode,
+        createdAt: new Date(),
       })
-      .select()
-      .single();
+      .returning({ id: cards.id });
 
-    if (error) {
-      throw error;
-    }
-
-    return new Response(JSON.stringify({ id: data.id }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to create card' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return json({ id: inserted.id }, 201);
+  } catch {
+    return json({ error: 'Failed to create card' }, 500);
   }
 };
 
-export const DELETE: APIRoute = async ({ request }) => {
-  const userId = await getUserIdFromRequest(request);
+export const DELETE: APIRoute = async ({ request, locals }) => {
+  const { DB, BETTER_AUTH_SECRET, BETTER_AUTH_URL } = locals.runtime.env;
+  const auth = createAuth(DB, BETTER_AUTH_SECRET, [BETTER_AUTH_URL]);
+  const session = await auth.api.getSession({ headers: request.headers });
 
-  if (!userId) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  if (!session?.user) {
+    return json({ error: 'Unauthorized' }, 401);
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: 'Invalid JSON' }, 400);
+  }
+
+  const parsed = z.object({ id: z.number() }).safeParse(body);
+  if (!parsed.success) {
+    return json({ error: 'Invalid id' }, 400);
   }
 
   try {
-    const { id } = await request.json();
+    const db = createDb(DB);
+    await db
+      .delete(cards)
+      .where(and(eq(cards.id, parsed.data.id), eq(cards.userId, session.user.id)));
 
-    const { error } = await supabase
-      .from('cards')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', userId);
-
-    if (error) {
-      throw error;
-    }
-
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to delete card' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return json({ success: true });
+  } catch {
+    return json({ error: 'Failed to delete card' }, 500);
   }
 };

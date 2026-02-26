@@ -1,21 +1,20 @@
 import React from 'react';
+import { WifiOff } from 'lucide-react';
 
 interface OfflineAlertProps {
   isOffline: boolean;
 }
 
 const OfflineAlert: React.FC<OfflineAlertProps> = ({ isOffline }) => {
-  if (!isOffline) {
-    return null;
-  }
+  if (!isOffline) return null;
 
   return (
-    <div
-      className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4"
-      role="alert"
-    >
-      <p className="font-bold">You are offline</p>
-      <p>Some features may be limited until you reconnect.</p>
+    <div className="flex items-center gap-3 bg-[#FF9500]/10 border border-[#FF9500]/20 rounded-[12px] px-4 py-3 mb-4">
+      <WifiOff className="w-4 h-4 text-[#FF9500] shrink-0" />
+      <div>
+        <p className="text-[14px] font-semibold text-[#FF9500]">You're offline</p>
+        <p className="text-[12px] text-[#FF9500]/70">Showing cached cards</p>
+      </div>
     </div>
   );
 };

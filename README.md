@@ -1,59 +1,78 @@
 # Card Trooper
 
-Card Trooper is a modern web application for managing barcode cards, similar to Stocard, but with a unique twist. Built using Astro, React, and Shadcn UI, this project is optimized for fast performance and seamless user experience.
+A minimal PWA for storing and scanning loyalty and store cards. Built for mobile with an Apple-inspired light UI.
 
-## 🚀 Project Structure
+## Stack
 
-Inside your Card Trooper project, you'll find the following folders and files:
+- **Astro 5** + **React** + **Tailwind CSS**
+- **Cloudflare Pages** (hosting) + **Cloudflare D1** (SQLite database)
+- **better-auth** (authentication, HTTP-only session cookies)
+- **Drizzle ORM** (database queries)
 
-```text
-/
-├── public/
-├── src/
-│   ├── components/
-│   ├── layouts/
-│   ├── lib/
-│   ├── pages/
-│   └── styles/
-└── astro.config.mjs
-```
+## Local Development
 
-## 🧞 Commands
-
-All commands are run from the root of the project, using a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs all necessary dependencies              |
-| `npm run dev`             | Starts the local development server at `localhost:4321` |
-| `npm run build`           | Builds the production version of your site to `./dist/` |
-| `npm run preview`         | Previews the production build locally            |
-| `npm run astro ...`       | Executes Astro CLI commands (e.g., `astro add`)  |
-| `npm run astro -- --help` | Displays help for the Astro CLI                  |
-
-## 💡 Features
-
-- **Barcode Card Management**: Easily add, manage, and display barcode cards for various stores.
-- **Responsive Design**: Optimized for mobile and desktop viewing.
-- **Fast and Lightweight**: Built with Astro to ensure blazing-fast performance.
-- **Modern UI**: Styled using Shadcn UI for a sleek and modern look.
-
-## 📚 Learn More
-
-If you're interested in learning more about Astro, React, or Shadcn UI, here are some helpful links:
-
-- [Astro Documentation](https://docs.astro.build/en/getting-started/)
-- [React Documentation](https://react.dev/learn)
-- [Shadcn UI Documentation](https://ui.shadcn.com/docs)
-
-## 🎉 Get Started
-
-To get started with Card Trooper, clone this repository, install dependencies, and start the development server:
+### 1. Install dependencies
 
 ```sh
-git clone https://github.com/georgevgs/card-trooper.git
-cd card-trooper
 npm install
+```
+
+### 2. Create a D1 database
+
+```sh
+npx wrangler d1 create card-trooper
+```
+
+Copy the database ID into `wrangler.toml`:
+
+```toml
+[[d1_databases]]
+binding = "DB"
+database_name = "card-trooper"
+database_id = "your-database-id-here"
+```
+
+### 3. Run the migration
+
+```sh
+npx wrangler d1 execute card-trooper --local --file=./migrations/0001_init.sql
+```
+
+### 4. Set local environment variables
+
+Copy `.env.example` to `.dev.vars` and fill in the values:
+
+```sh
+cp .env.example .dev.vars
+```
+
+### 5. Start the dev server
+
+```sh
 npm run dev
 ```
-Happy coding! 🚀
+
+## Commands
+
+| Command           | Action                              |
+| :---------------- | :---------------------------------- |
+| `npm run dev`     | Start local dev server (port 4321)  |
+| `npm run build`   | Build for production                |
+| `npm run preview` | Preview production build locally    |
+
+## Deployment
+
+Deployed via **Cloudflare Pages** with Git integration. Every push to `main` triggers a new deployment.
+
+Set these in the Cloudflare Pages dashboard under **Settings → Variables and Secrets**:
+
+| Variable            | Description                          |
+| :------------------ | :----------------------------------- |
+| `BETTER_AUTH_SECRET` | Random secret string for auth       |
+| `BETTER_AUTH_URL`   | Your production URL                  |
+
+And under **Settings → Bindings**:
+
+| Binding | Type        | Value        |
+| :------ | :---------- | :----------- |
+| `DB`    | D1 Database | card-trooper |

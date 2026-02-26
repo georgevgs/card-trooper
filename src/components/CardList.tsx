@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { X } from 'lucide-react';
+import { X, Search } from 'lucide-react';
 import StoreCard from '@/components/StoreCard';
 import DeleteCardDialog from '@/components/DeleteCardDialog';
 import FullScreenCard from '@/components/FullScreenCard';
@@ -41,25 +40,46 @@ const CardList = ({ cards, onDeleteCard, isSearchVisible }: CardListProps) => {
   return (
     <>
       {isSearchVisible && (
-        <div className="mb-6 relative">
-          <Input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search cards..."
-            className="pl-4 pr-10 py-2 w-full rounded-lg border-2 border-purple-300 focus:border-purple-500 focus:outline-none focus:ring-0 focus-visible:ring-0 focus:shadow-none transition duration-300 ease-in-out"
-          />
-          {searchTerm && (
-            <button
-              onClick={clearSearch}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          )}
+        <div className="mb-4 relative">
+          <div className="flex items-center bg-white rounded-[12px] border border-[#E5E5EA] px-3 gap-2">
+            <Search className="w-4 h-4 text-[#C7C7CC] shrink-0" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search"
+              autoFocus
+              className="flex-1 py-3 text-[15px] text-[#1C1C1E] placeholder:text-[#C7C7CC] bg-transparent outline-none"
+            />
+            {searchTerm && (
+              <button onClick={clearSearch} className="text-[#C7C7CC] active:text-[#8E8E93]">
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      {filteredCards.length === 0 && !isSearchVisible && (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-16 h-16 bg-[#E5E5EA] rounded-[18px] flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-[#8E8E93]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+            </svg>
+          </div>
+          <p className="text-[17px] font-semibold text-[#1C1C1E] mb-1">No Cards Yet</p>
+          <p className="text-[15px] text-[#3C3C43]/60">Tap + to add your first card</p>
+        </div>
+      )}
+
+      {filteredCards.length === 0 && isSearchVisible && searchTerm && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="text-[17px] font-semibold text-[#1C1C1E] mb-1">No Results</p>
+          <p className="text-[15px] text-[#3C3C43]/60">No cards matching "{searchTerm}"</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {filteredCards.map((card) => (
           <StoreCard
             key={card.id}
@@ -69,6 +89,7 @@ const CardList = ({ cards, onDeleteCard, isSearchVisible }: CardListProps) => {
           />
         ))}
       </div>
+
       <DeleteCardDialog
         isOpen={deleteCardId !== null}
         onClose={() => setDeleteCardId(null)}

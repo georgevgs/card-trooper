@@ -1,0 +1,9 @@
+name = "card-trooper"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "./dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "card-trooper"
+database_id = "a13bca15-9861-4892-8487-d33680601be2"

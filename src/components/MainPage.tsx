@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import * as AuthService from '@/services/AuthService';
 import type { StoreCardType } from '@/types/storecard';
 import Header from './Header';
@@ -16,7 +15,6 @@ interface MainPageProps {
 }
 
 const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
-  const { isAuthenticated, accessToken, isLoading: authLoading } = useAuth();
   const [isAddCardOpen, setIsAddCardOpen] = useState<boolean>(false);
   const [cards, setCards] = useState<StoreCardType[]>([]);
   const [isLoadingCards, setIsLoadingCards] = useState<boolean>(true);
@@ -27,10 +25,8 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
-
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -38,10 +34,8 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      loadCards();
-    }
-  }, [isAuthenticated, accessToken]);
+    loadCards();
+  }, []);
 
   const loadCardsFromCache = (): StoreCardType[] => {
     const cachedData = localStorage.getItem(CACHE_KEY);
@@ -57,9 +51,9 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     const cachedCards = loadCardsFromCache();
     setCards(cachedCards);
 
-    if (navigator.onLine && accessToken) {
+    if (navigator.onLine) {
       try {
-        const fetchedCards = await AuthService.fetchCards(accessToken);
+        const fetchedCards = await AuthService.fetchCards();
         setCards(fetchedCards);
         saveCardsToCache(fetchedCards);
       } catch (error) {
@@ -72,8 +66,8 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   const handleAddCard = async (newCardData: Omit<StoreCardType, 'id'>) => {
     setIsAddingCard(true);
     try {
-      if (navigator.onLine && accessToken) {
-        const addedCard = await AuthService.addCard(accessToken, newCardData);
+      if (navigator.onLine) {
+        const addedCard = await AuthService.addCard(newCardData);
         updateCardsState(addedCard);
       } else {
         const offlineCard = createOfflineCard(newCardData);
@@ -89,8 +83,8 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
 
   const handleDeleteCard = async (id: number) => {
     try {
-      if (navigator.onLine && accessToken) {
-        await AuthService.deleteCard(accessToken, id);
+      if (navigator.onLine) {
+        await AuthService.deleteCard(id);
       }
       removeCardFromState(id);
     } catch (error) {
@@ -120,17 +114,11 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     isOffline: true,
   });
 
-  const toggleSearch = () => {
-    setIsSearchVisible(!isSearchVisible);
-  };
-
-  if (authLoading) {
-    return <LoadingScreen />;
-  }
+  const toggleSearch = () => setIsSearchVisible(!isSearchVisible);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900">
-      <div className="container mx-auto min-h-screen flex flex-col p-4 sm:p-6">
+    <div className="min-h-screen w-full bg-[#F2F2F7]">
+      <div className="container mx-auto min-h-screen flex flex-col px-4 py-4 sm:px-6 max-w-2xl">
         <Header
           onAddCard={() => setIsAddCardOpen(true)}
           onLogout={onLogout}
