@@ -117,30 +117,28 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   const toggleSearch = () => setIsSearchVisible(!isSearchVisible);
 
   return (
-    <div className="min-h-screen w-full bg-[#F2F2F7]">
-      <div className="container mx-auto min-h-screen flex flex-col px-4 py-4 sm:px-6 max-w-2xl">
-        <Header
-          onAddCard={() => setIsAddCardOpen(true)}
-          onLogout={onLogout}
-          onToggleSearch={toggleSearch}
-          isAddingCard={isAddingCard}
-        />
-        <main className="flex-grow overflow-auto">
-          {isLoadingCards ? (
-            <LoadingScreen />
-          ) : (
-            <>
-              <OfflineAlert isOffline={isOffline} />
-              <CardList
-                cards={cards}
-                onDeleteCard={handleDeleteCard}
-                isSearchVisible={isSearchVisible}
-              />
-            </>
-          )}
-        </main>
-        <Footer />
-      </div>
+    <div className="min-h-screen w-full bg-background">
+      <Header
+        onAddCard={() => setIsAddCardOpen(true)}
+        onLogout={onLogout}
+        onToggleSearch={toggleSearch}
+        isAddingCard={isAddingCard}
+      />
+      <main className="max-w-5xl mx-auto px-4 py-5 sm:px-6">
+        {isLoadingCards ? (
+          <LoadingScreen />
+        ) : (
+          <>
+            <OfflineAlert isOffline={isOffline} />
+            <CardList
+              cards={cards}
+              onDeleteCard={handleDeleteCard}
+              isSearchVisible={isSearchVisible}
+            />
+          </>
+        )}
+      </main>
+      <Footer />
       <AddCardDialog
         isOpen={isAddCardOpen}
         onOpenChange={setIsAddCardOpen}

@@ -4,27 +4,77 @@
 
 @layer base {
   :root {
-    /* Apple HIG Light Theme */
-    --background: 0 0% 94.9%;          /* #F2F2F7 systemGroupedBackground */
-    --foreground: 240 3.9% 11%;        /* #1C1C1E label */
-    --card: 0 0% 100%;                 /* #FFFFFF secondarySystemGroupedBackground */
+    /* macOS Light — Tailwind HSL vars */
+    --background: 240 5% 96%;          /* #F4F4F5 */
+    --foreground: 240 3.9% 11%;        /* #1C1C1E */
+    --card: 0 0% 100%;                 /* #FFFFFF */
     --card-foreground: 240 3.9% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 3.9% 11%;
-    --primary: 211 100% 50%;           /* #007AFF iOS Blue */
+    --primary: 211 100% 50%;           /* #007AFF */
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 5% 96%;           /* #F2F2F2 */
+    --secondary: 240 4% 95%;
     --secondary-foreground: 240 3.9% 11%;
-    --muted: 240 5% 94%;
-    --muted-foreground: 240 4% 46%;    /* #737373 secondary label */
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 3.9% 11%;
-    --destructive: 4 90% 58%;          /* #FF3B30 iOS Red */
+    --muted: 240 4% 95%;
+    --muted-foreground: 240 4% 56%;    /* #8E8E93 */
+    --accent: 211 95% 96%;
+    --accent-foreground: 211 100% 40%;
+    --destructive: 4 90% 58%;          /* #FF3B30 */
     --destructive-foreground: 0 0% 100%;
-    --border: 240 6% 83%;              /* #D1D1D6 separator */
-    --input: 240 6% 83%;
+    --border: 240 5% 90%;              /* subtle separator */
+    --input: 240 5% 90%;
     --ring: 211 100% 50%;
-    --radius: 0.75rem;                 /* 12px - Apple standard */
+    --radius: 0.625rem;                /* 10px — macOS standard */
+
+    /* macOS raw values */
+    --mac-toolbar: rgba(246, 246, 246, 0.88);
+    --mac-sidebar: rgba(242, 242, 247, 0.85);
+    --mac-sheet: rgba(248, 248, 250, 0.98);
+    --mac-border: rgba(0, 0, 0, 0.08);
+    --mac-border-strong: rgba(0, 0, 0, 0.15);
+    --mac-hover: rgba(0, 0, 0, 0.04);
+    --mac-selected: rgba(0, 122, 255, 0.1);
+    --mac-section: #6E6E73;
+    --mac-input-bg: rgba(0, 0, 0, 0.05);
+    --mac-shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+    --mac-shadow-dialog: 0 22px 70px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.1);
+  }
+
+  .dark {
+    /* macOS Dark — Tailwind HSL vars */
+    --background: 240 4% 11%;          /* #1C1C1E */
+    --foreground: 0 0% 93%;            /* #EDEDED */
+    --card: 240 4% 17%;                /* #2C2C2E */
+    --card-foreground: 0 0% 93%;
+    --popover: 240 4% 14%;             /* #242426 */
+    --popover-foreground: 0 0% 93%;
+    --primary: 211 100% 50%;           /* #007AFF stays */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4% 18%;
+    --secondary-foreground: 0 0% 80%;
+    --muted: 240 4% 17%;
+    --muted-foreground: 240 4% 62%;    /* #98989D */
+    --accent: 211 100% 18%;
+    --accent-foreground: 211 100% 70%;
+    --destructive: 4 90% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 4% 21%;
+    --input: 240 4% 21%;
+    --ring: 211 100% 50%;
+    --radius: 0.625rem;
+
+    /* macOS Dark raw values */
+    --mac-toolbar: rgba(28, 28, 30, 0.88);
+    --mac-sidebar: rgba(30, 30, 32, 0.9);
+    --mac-sheet: rgba(36, 36, 38, 0.98);
+    --mac-border: rgba(255, 255, 255, 0.08);
+    --mac-border-strong: rgba(255, 255, 255, 0.15);
+    --mac-hover: rgba(255, 255, 255, 0.05);
+    --mac-selected: rgba(255, 255, 255, 0.1);
+    --mac-section: #636366;
+    --mac-input-bg: rgba(255, 255, 255, 0.06);
+    --mac-shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    --mac-shadow-dialog: 0 22px 70px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.3);
   }
 }
 
@@ -33,58 +83,75 @@
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
-      'Helvetica Neue', Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  html {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
-  /* iOS Safe Area Support */
-  html,
-  body {
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-      env(safe-area-inset-left);
+  html, body {
     height: 100%;
     overflow-x: hidden;
   }
 
-  /* iOS Touch Improvements */
-  html {
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    touch-action: manipulation;
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
+      'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Prevent iOS input zoom */
-  input,
-  select,
-  textarea {
+  /* Prevent iOS input zoom — keep 16px on mobile */
+  input, select, textarea {
     font-size: 16px !important;
   }
 
-  /* iOS Form Fixes - Color Input */
+  @media (min-width: 640px) {
+    input, select, textarea {
+      font-size: 13px !important;
+    }
+  }
+
+  /* macOS-style thin scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 99px;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.15);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.35);
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.25);
+  }
+
+  /* Color input */
   input[type='color'] {
     -webkit-appearance: none;
     appearance: none;
     cursor: pointer;
     background: none;
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 28px;
+    min-width: 28px;
   }
-
   input[type='color']::-webkit-color-swatch-wrapper {
     padding: 0;
-    border-radius: 0.5rem;
+    border-radius: 6px;
   }
-
   input[type='color']::-webkit-color-swatch {
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 6px;
   }
-
-  input[type='color']:active,
   input[type='color']:focus {
     outline: 2px solid #007AFF;
     outline-offset: 2px;
@@ -97,28 +164,36 @@
     -webkit-appearance: none;
     margin: 0;
   }
-
   .no-spinner {
     -moz-appearance: textfield;
   }
 
-  /* Apple-style inset grouped list */
-  .apple-grouped-input {
-    @apply bg-white border-0 rounded-xl px-4 py-3 text-[#1C1C1E] placeholder:text-[#C7C7CC];
-    box-shadow: none;
+  /* Frosted glass */
+  .mac-toolbar {
+    background: var(--mac-toolbar);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
 
-  .apple-grouped-input:focus {
-    @apply outline-none ring-0;
-    box-shadow: none;
+  .mac-sheet {
+    background: var(--mac-sheet);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
   }
 
-  /* Smooth card press animation */
-  .card-press {
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  /* Card hover */
+  .mac-card {
+    transition: box-shadow 0.15s ease, background 0.1s ease;
+  }
+  .mac-card:hover {
+    background: var(--mac-hover);
   }
 
-  .card-press:active {
-    transform: scale(0.97);
+  /* Safe area support */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
   }
 }

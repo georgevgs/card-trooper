@@ -8,6 +8,22 @@ type AddCardFormProps = {
   isLoading: boolean;
 };
 
+const FormRow: React.FC<{
+  label: string;
+  children: React.ReactNode;
+  isLast?: boolean;
+}> = ({ label, children, isLast }) => (
+  <div
+    className={`flex items-center px-3 gap-3 ${!isLast ? 'border-b' : ''}`}
+    style={{ borderColor: 'var(--mac-border)' }}
+  >
+    <label className="text-[13px] text-foreground w-24 shrink-0 py-2.5 select-none">
+      {label}
+    </label>
+    {children}
+  </div>
+);
+
 const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
   const [formState, setFormState] = useState<Omit<StoreCardType, 'id'>>({
     storeName: '',
@@ -32,11 +48,13 @@ const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="px-5 pb-6 space-y-4">
+    <form onSubmit={handleSubmit} className="px-4 pb-4 pt-3 space-y-3">
       {/* Store Name + Card Number */}
-      <div className="bg-white rounded-[12px] overflow-hidden divide-y divide-[#E5E5EA]">
-        <div className="flex items-center px-4">
-          <label className="text-[15px] text-[#1C1C1E] w-28 shrink-0 py-3">Store Name</label>
+      <div
+        className="rounded-[8px] overflow-hidden border"
+        style={{ background: 'hsl(var(--card))', borderColor: 'var(--mac-border)' }}
+      >
+        <FormRow label="Store Name">
           <input
             name="storeName"
             placeholder="e.g. Starbucks"
@@ -44,11 +62,10 @@ const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
             onChange={handleInputChange}
             required
             disabled={isLoading}
-            className="flex-1 py-3 text-[15px] text-[#1C1C1E] placeholder:text-[#C7C7CC] bg-transparent outline-none"
+            className="flex-1 py-2.5 bg-transparent outline-none text-foreground placeholder:text-muted-foreground disabled:opacity-50"
           />
-        </div>
-        <div className="flex items-center px-4">
-          <label className="text-[15px] text-[#1C1C1E] w-28 shrink-0 py-3">Card Number</label>
+        </FormRow>
+        <FormRow label="Card Number" isLast>
           <input
             name="cardNumber"
             type={formState.isQRCode ? 'text' : 'tel'}
@@ -59,16 +76,19 @@ const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
             onChange={handleInputChange}
             required
             disabled={isLoading}
-            className="flex-1 py-3 text-[15px] text-[#1C1C1E] placeholder:text-[#C7C7CC] bg-transparent outline-none"
+            className="flex-1 py-2.5 bg-transparent outline-none text-foreground placeholder:text-muted-foreground disabled:opacity-50"
           />
-        </div>
+        </FormRow>
       </div>
 
       {/* Color */}
-      <div className="bg-white rounded-[12px] overflow-hidden">
-        <div className="flex items-center px-4 py-3 gap-4">
-          <label className="text-[15px] text-[#1C1C1E] flex-1">Card Color</label>
-          <div className="flex items-center gap-3">
+      <div
+        className="rounded-[8px] overflow-hidden border"
+        style={{ background: 'hsl(var(--card))', borderColor: 'var(--mac-border)' }}
+      >
+        <div className="flex items-center px-3 py-2.5 gap-3">
+          <label className="text-[13px] text-foreground flex-1 select-none">Card Color</label>
+          <div className="flex items-center gap-2.5">
             <input
               type="color"
               name="color"
@@ -77,7 +97,7 @@ const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
               disabled={isLoading}
               aria-label="Pick card color"
               style={{ colorScheme: 'light' }}
-              className="w-10 h-10 rounded-[8px] cursor-pointer border-0 p-0.5 bg-transparent"
+              className="w-8 h-8 rounded-[6px] cursor-pointer border-0 p-0.5 bg-transparent"
             />
             <input
               type="text"
@@ -89,35 +109,35 @@ const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
               maxLength={7}
               disabled={isLoading}
               aria-label="Enter color hex code"
-              className="w-24 text-[14px] text-[#3C3C43] text-right bg-transparent outline-none uppercase font-mono"
+              className="w-20 text-[12px] text-muted-foreground text-right bg-transparent outline-none uppercase font-mono"
             />
           </div>
         </div>
       </div>
 
       {/* QR Code toggle */}
-      <div className="bg-white rounded-[12px] overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3">
+      <div
+        className="rounded-[8px] overflow-hidden border"
+        style={{ background: 'hsl(var(--card))', borderColor: 'var(--mac-border)' }}
+      >
+        <div className="flex items-center justify-between px-3 py-2.5">
           <div>
-            <p className="text-[15px] text-[#1C1C1E]">Use QR Code</p>
-            <p className="text-[12px] text-[#3C3C43]/60 mt-0.5">Instead of a barcode</p>
+            <p className="text-[13px] text-foreground">Use QR Code</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Instead of a barcode</p>
           </div>
-          {/* iOS-style toggle */}
+          {/* macOS-style toggle */}
           <button
             type="button"
             role="switch"
             aria-checked={formState.isQRCode}
             disabled={isLoading}
-            onClick={() =>
-              setFormState((prev) => ({ ...prev, isQRCode: !prev.isQRCode }))
-            }
-            className={`relative inline-flex h-[31px] w-[51px] items-center rounded-full transition-colors duration-200 focus:outline-none ${
-              formState.isQRCode ? 'bg-[#34C759]' : 'bg-[#E5E5EA]'
-            }`}
+            onClick={() => setFormState((prev) => ({ ...prev, isQRCode: !prev.isQRCode }))}
+            className="relative inline-flex h-[22px] w-[38px] items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 disabled:opacity-40"
+            style={{ background: formState.isQRCode ? '#34C759' : 'var(--mac-input-bg)' }}
           >
             <span
-              className={`inline-block h-[27px] w-[27px] transform rounded-full bg-white shadow-md transition-transform duration-200 ${
-                formState.isQRCode ? 'translate-x-[22px]' : 'translate-x-[2px]'
+              className={`inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow-md transition-transform duration-200 ${
+                formState.isQRCode ? 'translate-x-[18px]' : 'translate-x-[2px]'
               }`}
             />
           </button>
@@ -128,16 +148,18 @@ const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-[#007AFF] text-white text-[17px] font-semibold py-[14px] rounded-[14px] disabled:opacity-50 transition-opacity active:opacity-80 flex items-center justify-center gap-2"
+        className="w-full bg-[#007AFF] text-white text-[14px] font-semibold py-[9px] rounded-[8px] disabled:opacity-50 transition-opacity hover:opacity-90 flex items-center justify-center gap-2"
       >
-        {isLoading ? <><LoadingSpinner /> <span>Adding…</span></> : 'Add Card'}
+        {isLoading ? <><LoadingSpinner /><span>Adding…</span></> : 'Add Card'}
       </button>
 
       <button
         type="button"
         onClick={onClose}
         disabled={isLoading}
-        className="w-full text-[#007AFF] text-[17px] font-medium py-3 transition-opacity active:opacity-60"
+        className="w-full text-[#007AFF] text-[14px] font-medium py-2.5 rounded-[8px] transition-colors disabled:opacity-40"
+        onMouseEnter={e => (e.currentTarget.style.background = 'var(--mac-hover)')}
+        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
         Cancel
       </button>

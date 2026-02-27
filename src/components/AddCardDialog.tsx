@@ -21,31 +21,39 @@ const AddCardDialog: React.FC<AddCardDialogProps> = ({
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onOpenChange(false);
-      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onOpenChange(false); }}
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+        className="absolute inset-0 backdrop-blur-sm"
+        style={{ background: 'rgba(0,0,0,0.35)' }}
         onClick={() => onOpenChange(false)}
       />
 
-      {/* Sheet */}
-      <div className="relative w-full sm:max-w-sm bg-[#F2F2F7] rounded-t-[20px] sm:rounded-[20px] z-10 max-h-[90vh] overflow-y-auto">
-        {/* Handle */}
+      {/* Dialog */}
+      <div
+        className="relative w-full sm:max-w-sm mac-sheet rounded-t-[14px] sm:rounded-[14px] z-10 max-h-[90vh] overflow-y-auto"
+        style={{ border: '1px solid var(--mac-border-strong)', boxShadow: 'var(--mac-shadow-dialog)' }}
+      >
+        {/* Drag handle (mobile only) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
-          <div className="w-9 h-1 bg-[#3C3C43]/20 rounded-full" />
+          <div className="w-8 h-1 rounded-full" style={{ background: 'var(--mac-border-strong)' }} />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
-          <h2 className="text-[20px] font-bold text-[#1C1C1E]">Add Card</h2>
+        <div
+          className="flex items-center justify-between px-4 pt-4 pb-3 border-b"
+          style={{ borderColor: 'var(--mac-border)' }}
+        >
+          <h2 className="text-[15px] font-semibold text-foreground">Add Card</h2>
           <button
             onClick={() => onOpenChange(false)}
-            className="w-8 h-8 bg-[#E5E5EA] rounded-full flex items-center justify-center"
+            className="w-7 h-7 rounded-full flex items-center justify-center transition-colors text-muted-foreground"
+            style={{ background: 'var(--mac-input-bg)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--mac-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--mac-input-bg)')}
           >
-            <X className="w-4 h-4 text-[#3C3C43]" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
 

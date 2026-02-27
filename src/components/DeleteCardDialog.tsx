@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 type DeleteCardDialogProps = {
   isOpen: boolean;
@@ -11,43 +12,56 @@ const DeleteCardDialog = ({ isOpen, onClose, onConfirm }: DeleteCardDialogProps)
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 backdrop-blur-sm"
+        style={{ background: 'rgba(0,0,0,0.35)' }}
+        onClick={onClose}
+      />
 
-      {/* Action Sheet */}
-      <div className="relative w-full sm:max-w-sm z-10 px-4 pb-safe pb-4 space-y-2"
-        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+      {/* macOS Alert Dialog */}
+      <div
+        className="relative w-full max-w-[280px] mac-sheet rounded-[12px] z-10 overflow-hidden text-center"
+        style={{ border: '1px solid var(--mac-border-strong)', boxShadow: 'var(--mac-shadow-dialog)' }}
       >
-        {/* Main sheet */}
-        <div className="bg-white/90 backdrop-blur-xl rounded-[16px] overflow-hidden divide-y divide-[#3C3C43]/10">
-          <div className="px-4 py-4 text-center">
-            <p className="text-[13px] font-semibold text-[#3C3C43]/60 uppercase tracking-wide mb-1">
-              Delete Card
-            </p>
-            <p className="text-[13px] text-[#3C3C43]/60">
-              This card will be permanently deleted and cannot be recovered.
-            </p>
+        <div className="px-5 pt-5 pb-4">
+          <div className="flex justify-center mb-3">
+            <div className="w-11 h-11 rounded-full bg-[#FF3B30]/10 flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 text-[#FF3B30]" />
+            </div>
           </div>
-          <button
-            onClick={onConfirm}
-            className="w-full py-[17px] text-[17px] font-semibold text-[#FF3B30] active:bg-[#F2F2F7] transition-colors"
-          >
-            Delete Card
-          </button>
+          <p className="text-[15px] font-semibold text-foreground mb-1.5">Delete Card?</p>
+          <p className="text-[13px] text-muted-foreground leading-snug">
+            This card will be permanently deleted and cannot be recovered.
+          </p>
         </div>
 
-        {/* Cancel button — separate per iOS HIG */}
-        <button
-          onClick={onClose}
-          className="w-full bg-white/90 backdrop-blur-xl rounded-[16px] py-[17px] text-[17px] font-semibold text-[#007AFF] active:bg-[#F2F2F7] transition-colors"
+        {/* Buttons */}
+        <div
+          className="flex border-t"
+          style={{ borderColor: 'var(--mac-border)' }}
         >
-          Cancel
-        </button>
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 text-[14px] font-medium text-[#007AFF] transition-colors border-r"
+            style={{ borderColor: 'var(--mac-border)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--mac-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-3 text-[14px] font-semibold text-[#FF3B30] transition-colors"
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--mac-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          >
+            Delete
+          </button>
+        </div>
       </div>
     </div>
   );

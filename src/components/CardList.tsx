@@ -29,62 +29,91 @@ const CardList = ({ cards, onDeleteCard, isSearchVisible }: CardListProps) => {
     setDeleteCardId(null);
   };
 
-  const handleCardClick = (card: StoreCardType) => {
-    setFullScreenCard(card);
-  };
-
-  const clearSearch = () => {
-    setSearchTerm('');
-  };
+  const clearSearch = () => setSearchTerm('');
 
   return (
     <>
+      {/* Search bar */}
       {isSearchVisible && (
-        <div className="mb-4 relative">
-          <div className="flex items-center bg-white rounded-[12px] border border-[#E5E5EA] px-3 gap-2">
-            <Search className="w-4 h-4 text-[#C7C7CC] shrink-0" />
+        <div className="mb-4">
+          <div
+            className="flex items-center rounded-[8px] px-3 gap-2 border"
+            style={{
+              background: 'var(--mac-input-bg)',
+              borderColor: 'var(--mac-border)',
+            }}
+          >
+            <Search className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--mac-section)' }} />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search"
               autoFocus
-              className="flex-1 py-3 text-[15px] text-[#1C1C1E] placeholder:text-[#C7C7CC] bg-transparent outline-none"
+              className="flex-1 py-2 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
             />
             {searchTerm && (
-              <button onClick={clearSearch} className="text-[#C7C7CC] active:text-[#8E8E93]">
-                <X className="h-4 w-4" />
+              <button
+                onClick={clearSearch}
+                className="rounded-full p-0.5 transition-colors"
+                style={{ color: 'var(--mac-section)' }}
+              >
+                <X className="h-3 w-3" />
               </button>
             )}
           </div>
         </div>
       )}
 
+      {/* Section header */}
+      {!isSearchVisible && cards.length > 0 && (
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--mac-section)' }}>
+            My Cards
+          </p>
+          <p className="text-[11px]" style={{ color: 'var(--mac-section)' }}>
+            {cards.length} {cards.length === 1 ? 'card' : 'cards'}
+          </p>
+        </div>
+      )}
+
+      {/* Empty state */}
       {filteredCards.length === 0 && !isSearchVisible && (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-16 h-16 bg-[#E5E5EA] rounded-[18px] flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-[#8E8E93]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div
+            className="w-14 h-14 rounded-[12px] flex items-center justify-center mb-4"
+            style={{ background: 'var(--mac-input-bg)', border: '1px solid var(--mac-border)' }}
+          >
+            <svg
+              className="w-7 h-7"
+              style={{ color: 'var(--mac-section)' }}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
             </svg>
           </div>
-          <p className="text-[17px] font-semibold text-[#1C1C1E] mb-1">No Cards Yet</p>
-          <p className="text-[15px] text-[#3C3C43]/60">Tap + to add your first card</p>
+          <p className="text-[15px] font-semibold text-foreground mb-1">No Cards Yet</p>
+          <p className="text-[13px] text-muted-foreground">Click + to add your first card</p>
         </div>
       )}
 
       {filteredCards.length === 0 && isSearchVisible && searchTerm && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-[17px] font-semibold text-[#1C1C1E] mb-1">No Results</p>
-          <p className="text-[15px] text-[#3C3C43]/60">No cards matching "{searchTerm}"</p>
+          <p className="text-[15px] font-semibold text-foreground mb-1">No Results</p>
+          <p className="text-[13px] text-muted-foreground">No cards matching "{searchTerm}"</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {/* Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {filteredCards.map((card) => (
           <StoreCard
             key={card.id}
             card={card}
-            onCardClick={handleCardClick}
+            onCardClick={setFullScreenCard}
             onDeleteClick={() => setDeleteCardId(card.id)}
           />
         ))}

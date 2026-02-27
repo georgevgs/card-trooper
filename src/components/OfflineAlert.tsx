@@ -9,7 +9,7 @@ const OfflineAlert: React.FC<OfflineAlertProps> = ({ isOffline }) => {
   if (!isOffline) return null;
 
   return (
-    <div className="flex items-center gap-3 bg-[#FF9500]/10 border border-[#FF9500]/20 rounded-[12px] px-4 py-3 mb-4">
+    <div className="flex items-center gap-3 bg-[#FF9500]/10 border border-[#FF9500]/20 rounded-[8px] px-3 py-2.5 mb-4">
       <WifiOff className="w-4 h-4 text-[#FF9500] shrink-0" />
       <div>
         <p className="text-[14px] font-semibold text-[#FF9500]">You're offline</p>
