@@ -1,17 +1,13 @@
-const CACHE_NAME = 'card-trooper-cache-v2';
-const DYNAMIC_CACHE_NAME = 'card-trooper-dynamic-cache-v2';
+const CACHE_NAME = 'card-trooper-cache-v3';
+const DYNAMIC_CACHE_NAME = 'card-trooper-dynamic-cache-v3';
 
 const urlsToCache = [
   '/',
   '/index.html',
   '/offline.html',
   '/manifest.json',
-  '/assets/styles.css',
-  '/assets/main.js',
   '/favicon/favicon.ico',
   '/favicon/apple-touch-icon.png',
-  '/app.js',
-  '/app.css',
 ];
 
 self.addEventListener('install', (event) => {
@@ -24,6 +20,8 @@ self.addEventListener('install', (event) => {
       );
     }),
   );
+  // Activate immediately so the new SW takes over
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -36,21 +34,28 @@ self.addEventListener('activate', (event) => {
           }
         }),
       );
-    }),
+    }).then(() => self.clients.claim()),
   );
 });
 
 self.addEventListener('fetch', (event) => {
-  if (
-    event.request.url.startsWith('chrome-extension://') ||
-    event.request.url.includes('extension://')
-  ) {
-    return; // Ignore chrome-extension and other extension requests
+  const url = new URL(event.request.url);
+
+  // Never intercept API or auth requests — let the browser handle them
+  // natively with full cookie/credential support. This is critical for
+  // iOS PWA standalone mode where re-issuing fetch() from the SW scope
+  // can strip credentials.
+  if (url.pathname.startsWith('/api/')) {
+    return;
   }
 
+  // Ignore non-http(s) and extension URLs
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
+
+  // Non-GET requests (other than API): pass through without caching
   if (event.request.method !== 'GET') {
-    // For non-GET requests, go to the network
-    event.respondWith(fetch(event.request));
     return;
   }
 
@@ -59,19 +64,15 @@ self.addEventListener('fetch', (event) => {
       .match(event.request)
       .then((response) => {
         if (response) {
-          return response; // If found in cache, return the cached version
+          return response;
         }
 
-        // If not in cache, fetch from network
         return fetch(event.request).then((fetchResponse) => {
-          // Check if we received a valid response
           if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
             return fetchResponse;
           }
 
-          // Clone the response because we're going to use it twice
           const responseToCache = fetchResponse.clone();
-
           caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
           });
@@ -80,7 +81,6 @@ self.addEventListener('fetch', (event) => {
         });
       })
       .catch(() => {
-        // If both cache and network fail, show an offline page for navigate requests
         if (event.request.mode === 'navigate') {
           return caches.match('/offline.html');
         }
