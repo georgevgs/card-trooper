@@ -8,7 +8,7 @@ import { eq, and } from 'drizzle-orm';
 const cardSchema = z.object({
   storeName: z.string().min(1).max(100),
   cardNumber: z.string().min(1).max(200),
-  color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).transform((s) => s.toLowerCase()),
   isQRCode: z.boolean(),
 });
 

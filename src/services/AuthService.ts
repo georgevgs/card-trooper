@@ -1,4 +1,7 @@
+import { z } from 'zod';
 import type { StoreCardType } from '@/types/storecard';
+
+const addCardResponseSchema = z.object({ id: z.number() });
 
 export const fetchCards = async (): Promise<StoreCardType[]> => {
   const response = await fetch('/api/cards', {
@@ -24,10 +27,13 @@ export const addCard = async (cardData: Omit<StoreCardType, 'id'>): Promise<Stor
     throw new Error('Failed to add card');
   }
 
-  const responseData = (await response.json()) as { id: number };
+  const parsed = addCardResponseSchema.safeParse(await response.json());
+  if (!parsed.success) {
+    throw new Error('Invalid response from server');
+  }
 
   return {
-    id: responseData.id,
+    id: parsed.data.id,
     ...cardData,
   };
 };
