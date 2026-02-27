@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode.react';
+import { ICONS } from '@/lib/icons';
 
 type StoreCard = {
   id: number;
@@ -23,65 +24,116 @@ const FullScreenCard: React.FC<FullScreenCardProps> = ({ card, onClose }) => {
     if (!card.isQRCode && barcodeRef.current) {
       JsBarcode(barcodeRef.current, card.cardNumber, {
         format: 'CODE128',
-        width: 2,
-        height: 80,
+        width: 2.2,
+        height: 88,
         displayValue: true,
-        fontSize: 14,
-        margin: 10,
+        fontSize: 13,
+        margin: 12,
+        background: '#FFFFFF',
+        lineColor: '#1C1917',
       });
     }
-
     document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, [card.cardNumber, card.isQRCode]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#F2F2F7]">
-      {/* Navigation bar */}
+    <div
+      className="fixed inset-0 z-50 flex flex-col anim-fade-in"
+      style={{ background: 'var(--c-cream)' }}
+    >
+      {/* Nav */}
       <div
-        className="flex items-center justify-center px-4 py-4 relative"
-        style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
+        className="flex items-center justify-between px-4 bg-white"
+        style={{
+          paddingTop: 'max(16px, env(safe-area-inset-top))',
+          paddingBottom: '12px',
+          borderBottom: '1px solid var(--c-border)',
+        }}
       >
         <button
           onClick={onClose}
-          className="absolute left-4 w-9 h-9 flex items-center justify-center text-[#007AFF] active:opacity-60 transition-opacity"
+          className="flex items-center gap-1.5 transition-opacity hover:opacity-70"
+          style={{ color: 'var(--c-blue)' }}
           aria-label="Close"
         >
-          <ChevronDown className="w-6 h-6" />
+          <ChevronDown className="w-5 h-5" />
+          <span className="text-[15px] font-medium">Back</span>
         </button>
-        <h2 className="text-[17px] font-semibold text-[#1C1C1E]">{card.storeName}</h2>
+
+        <h2
+          className="font-display italic text-[18px] absolute left-1/2 -translate-x-1/2"
+          style={{ color: 'var(--c-ink)', letterSpacing: '-0.01em' }}
+        >
+          {card.storeName}
+        </h2>
+
+        <div className="w-16" />
       </div>
 
-      {/* Card visual */}
-      <div className="flex-grow flex flex-col justify-center items-center px-6 gap-6">
-        {/* Card chip with color accent */}
-        <div className="w-full max-w-sm bg-white rounded-[20px] overflow-hidden shadow-lg">
-          <div className="h-2 w-full" style={{ backgroundColor: card.color }} />
-          <div className="px-6 py-5">
-            <p className="text-[13px] font-medium text-[#3C3C43]/60 mb-1 uppercase tracking-wider">
-              {card.storeName}
-            </p>
-            <p className="text-[13px] text-[#3C3C43]/40 font-mono">{card.cardNumber}</p>
+      {/* Content */}
+      <div className="flex-grow flex flex-col justify-center items-center px-6 gap-4">
+        {/* Card info panel */}
+        <div
+          className="w-full max-w-sm rounded-[16px] overflow-hidden anim-fade-up"
+          style={{
+            background: 'var(--c-white)',
+            border: '1px solid var(--c-border)',
+            boxShadow: '0 4px 20px var(--c-shadow-warm-md)',
+            animationDelay: '60ms',
+          }}
+        >
+          <div className="h-[3px] w-full" style={{ backgroundColor: card.color }} />
+          <div className="px-5 py-4 flex items-center gap-3">
+            <img
+              src={card.isQRCode ? ICONS.qrCode : ICONS.barcode}
+              alt=""
+              className="w-10 h-10 object-contain"
+            />
+            <div>
+              <p
+                className="text-[11px] font-semibold uppercase tracking-[0.08em] mb-0.5"
+                style={{ color: 'var(--c-ink-3)' }}
+              >
+                {card.storeName}
+              </p>
+              <p
+                className="text-[13px]"
+                style={{ color: 'var(--c-ink-3)', fontFamily: 'ui-monospace, monospace' }}
+              >
+                {card.cardNumber}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Code */}
-        <div className="w-full max-w-sm bg-white rounded-[20px] p-6 shadow-sm flex justify-center items-center">
+        {/* Barcode / QR code */}
+        <div
+          className="w-full max-w-sm rounded-[16px] p-5 flex justify-center items-center anim-fade-up"
+          style={{
+            background: 'var(--c-white)',
+            border: '1px solid var(--c-border)',
+            boxShadow: '0 2px 10px var(--c-shadow-warm)',
+            animationDelay: '120ms',
+          }}
+        >
           {card.isQRCode ? (
             <QRCode value={card.cardNumber} size={220} />
           ) : (
-            <svg ref={barcodeRef} className="w-full max-w-[280px]"></svg>
+            <svg ref={barcodeRef} className="w-full max-w-[280px]" />
           )}
         </div>
       </div>
 
       <div
-        className="pb-safe pb-8 text-center text-[13px] text-[#3C3C43]/40"
-        style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
+        className="text-center text-[12px] anim-fade-up"
+        style={{
+          color: 'var(--c-ink-3)',
+          paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
+          animationDelay: '180ms',
+        }}
       >
-        Tap the code for scanner
+        Hold up to scanner
       </div>
     </div>
   );

@@ -56,7 +56,10 @@ const App: React.FC = () => {
 
   if (isInitialLoad || isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-[#F2F2F7]">
+      <div
+        className="flex justify-center items-center h-screen"
+        style={{ background: 'var(--c-cream)' }}
+      >
         <LoadingSpinner />
       </div>
     );
@@ -65,11 +68,15 @@ const App: React.FC = () => {
   return (
     <>
       {showReload && (
-        <div className="fixed top-0 left-0 right-0 bg-[#007AFF] text-white px-4 py-3 text-center z-50 flex items-center justify-center gap-3">
-          <span className="text-sm font-medium">A new version is available</span>
+        <div
+          className="fixed top-0 left-0 right-0 px-4 py-2.5 text-center z-50 flex items-center justify-center gap-3"
+          style={{ background: 'var(--c-ink)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}
+        >
+          <span className="text-[13px] font-medium text-white">A new version is available</span>
           <button
             onClick={reloadPage}
-            className="bg-white text-[#007AFF] text-sm font-semibold px-3 py-1 rounded-full"
+            className="text-[13px] font-semibold px-3 py-1 rounded-full transition-opacity hover:opacity-90"
+            style={{ background: 'var(--c-blue)', color: 'white' }}
           >
             Update
           </button>

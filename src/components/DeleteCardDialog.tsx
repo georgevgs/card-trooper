@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { ICONS } from '@/lib/icons';
 
 type DeleteCardDialogProps = {
   isOpen: boolean;
@@ -12,51 +12,51 @@ const DeleteCardDialog = ({ isOpen, onClose, onConfirm }: DeleteCardDialogProps)
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      className="fixed inset-0 z-50 flex items-center justify-center px-5"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 backdrop-blur-sm"
-        style={{ background: 'rgba(0,0,0,0.35)' }}
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 backdrop-warm anim-fade-in" onClick={onClose} />
 
-      {/* macOS Alert Dialog */}
       <div
-        className="relative w-full max-w-[280px] mac-sheet rounded-[12px] z-10 overflow-hidden text-center"
-        style={{ border: '1px solid var(--mac-border-strong)', boxShadow: 'var(--mac-shadow-dialog)' }}
+        className="relative w-full max-w-[288px] rounded-[16px] z-10 overflow-hidden text-center anim-scale-in"
+        style={{
+          background: 'var(--c-white)',
+          border: '1px solid var(--c-border)',
+          boxShadow: '0 24px 64px rgba(28,25,23,0.16), 0 6px 16px rgba(28,25,23,0.08)',
+        }}
       >
-        <div className="px-5 pt-5 pb-4">
-          <div className="flex justify-center mb-3">
-            <div className="w-11 h-11 rounded-full bg-[#FF3B30]/10 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-[#FF3B30]" />
-            </div>
-          </div>
-          <p className="text-[15px] font-semibold text-foreground mb-1.5">Delete Card?</p>
-          <p className="text-[13px] text-muted-foreground leading-snug">
+        <div className="px-6 pt-6 pb-5">
+          <img
+            src={ICONS.giftCard}
+            alt=""
+            className="w-14 h-14 object-contain mx-auto mb-3 opacity-40"
+          />
+          <h3
+            className="font-display italic text-[22px] mb-1.5"
+            style={{ color: 'var(--c-ink)', letterSpacing: '-0.01em' }}
+          >
+            Delete card?
+          </h3>
+          <p className="text-[13px] leading-snug" style={{ color: 'var(--c-ink-2)' }}>
             This card will be permanently deleted and cannot be recovered.
           </p>
         </div>
 
-        {/* Buttons */}
-        <div
-          className="flex border-t"
-          style={{ borderColor: 'var(--mac-border)' }}
-        >
+        <div className="flex" style={{ borderTop: '1px solid var(--c-border)' }}>
           <button
             onClick={onClose}
-            className="flex-1 py-3 text-[14px] font-medium text-[#007AFF] transition-colors border-r"
-            style={{ borderColor: 'var(--mac-border)' }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--mac-hover)')}
+            className="flex-1 py-3.5 text-[14px] font-medium transition-colors"
+            style={{ color: 'var(--c-ink-2)', borderRight: '1px solid var(--c-border)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--c-cream)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 py-3 text-[14px] font-semibold text-[#FF3B30] transition-colors"
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--mac-hover)')}
+            className="flex-1 py-3.5 text-[14px] font-semibold transition-colors"
+            style={{ color: 'var(--c-red)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(220,38,38,0.05)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             Delete

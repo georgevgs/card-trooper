@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CreditCard, Shield, X } from 'lucide-react';
+import { Shield, X } from 'lucide-react';
+import { ICONS } from '@/lib/icons';
 
 interface WelcomePageProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -14,41 +15,33 @@ function getPasswordStrength(password: string): { score: number; label: string; 
   if (/[0-9]/.test(password)) score++;
   if (/[^A-Za-z0-9]/.test(password)) score++;
   const levels = [
-    { label: 'Weak', color: 'bg-[#FF3B30]' },
-    { label: 'Fair', color: 'bg-[#FF9500]' },
-    { label: 'Good', color: 'bg-[#FFCC00]' },
-    { label: 'Strong', color: 'bg-[#34C759]' },
-    { label: 'Very Strong', color: 'bg-[#34C759]' },
+    { label: 'Weak', color: '#DC2626' },
+    { label: 'Fair', color: '#D97706' },
+    { label: 'Good', color: '#CA8A04' },
+    { label: 'Strong', color: '#16A34A' },
+    { label: 'Very Strong', color: '#16A34A' },
   ];
   return { score, ...levels[score] };
 }
 
-const MacInput: React.FC<{
-  label: string;
-  type?: string;
-  placeholder: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  required?: boolean;
-  disabled?: boolean;
-  isFirst?: boolean;
-  isLast?: boolean;
-}> = ({ label, type = 'text', placeholder, value, onChange, required, disabled, isFirst, isLast }) => (
+const InputRow: React.FC<{
+  label: string; type?: string; placeholder: string;
+  value: string; onChange: (v: string) => void;
+  required?: boolean; disabled?: boolean; last?: boolean;
+}> = ({ label, type = 'text', placeholder, value, onChange, required, disabled, last }) => (
   <div
-    className={`flex items-center px-3 gap-3 ${!isLast ? 'border-b' : ''}`}
-    style={{ borderColor: 'var(--mac-border)' }}
+    className="flex items-center px-4 gap-3"
+    style={{ borderBottom: last ? 'none' : '1px solid var(--c-border)' }}
   >
-    <label className="text-[13px] text-foreground w-20 shrink-0 py-2.5 select-none">
+    <label className="text-[13px] font-medium w-20 shrink-0 py-3 select-none" style={{ color: 'var(--c-ink-2)' }}>
       {label}
     </label>
     <input
-      type={type}
-      placeholder={placeholder}
-      value={value}
-      onChange={onChange}
-      required={required}
-      disabled={disabled}
-      className="flex-1 py-2.5 bg-transparent outline-none text-foreground placeholder:text-muted-foreground disabled:opacity-50"
+      type={type} placeholder={placeholder} value={value}
+      onChange={e => onChange(e.target.value)}
+      required={required} disabled={disabled}
+      className="flex-1 py-3 bg-transparent outline-none disabled:opacity-50"
+      style={{ color: 'var(--c-ink)', fontSize: '15px' }}
     />
   </div>
 );
@@ -64,59 +57,44 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const passwordStrength = getPasswordStrength(signupPassword);
-
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-    try {
-      await onLogin(loginEmail, loginPassword);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRegisterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-    try {
-      await onRegister(username, signupEmail, signupPassword);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const strength = getPasswordStrength(signupPassword);
 
   const openAuth = (tab: 'login' | 'signup') => {
-    setActiveTab(tab);
-    setError('');
-    setIsAuthOpen(true);
+    setActiveTab(tab); setError(''); setIsAuthOpen(true);
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault(); setError(''); setIsLoading(true);
+    try { await onLogin(loginEmail, loginPassword); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.'); }
+    finally { setIsLoading(false); }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault(); setError(''); setIsLoading(true);
+    try { await onRegister(username, signupEmail, signupPassword); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Registration failed. Please try again.'); }
+    finally { setIsLoading(false); }
   };
 
   return (
-    <div className="min-h-screen w-full bg-background flex flex-col">
-      {/* Toolbar */}
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--c-cream)' }}>
+      {/* Nav */}
       <nav
-        className="flex justify-between items-center px-4 h-11 mac-toolbar border-b sticky top-0 z-10"
-        style={{ borderColor: 'var(--mac-border)' }}
+        className="flex justify-between items-center px-5 h-[52px] bg-white"
+        style={{ borderBottom: '1px solid var(--c-border)' }}
       >
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-[#007AFF] rounded-[6px] flex items-center justify-center">
-            <CreditCard className="w-3.5 h-3.5 text-white" />
-          </div>
-          <span className="text-[13px] font-semibold text-foreground tracking-tight">
+          <img src={ICONS.wallet} alt="" className="w-7 h-7 object-contain" />
+          <span className="font-display italic text-[17px]" style={{ color: 'var(--c-ink)' }}>
             Card Trooper
           </span>
         </div>
         <button
           onClick={() => openAuth('login')}
-          className="text-[#007AFF] text-[13px] font-medium px-3 py-1.5 rounded-[6px] transition-colors"
-          onMouseEnter={e => (e.currentTarget.style.background = 'var(--mac-hover)')}
+          className="text-[14px] font-medium px-3 py-1.5 rounded-[8px] transition-colors"
+          style={{ color: 'var(--c-blue)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--c-cream-2)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
         >
           Sign In
@@ -125,51 +103,61 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
 
       {/* Hero */}
       <main className="flex-grow flex flex-col justify-center items-center text-center px-6 py-16">
-        <div
-          className="w-16 h-16 bg-[#007AFF] rounded-[16px] flex items-center justify-center mb-7"
-          style={{ boxShadow: '0 8px 24px rgba(0,122,255,0.28)' }}
-        >
-          <CreditCard className="w-8 h-8 text-white" strokeWidth={1.5} />
+        {/* Thiings credit card icon */}
+        <div className="mb-8 anim-fade-up">
+          <img
+            src={ICONS.wallet}
+            alt="Wallet"
+            className="w-28 h-28 object-contain drop-shadow-xl"
+            style={{ animationDelay: '0ms' }}
+          />
         </div>
 
-        <h1 className="text-[36px] font-bold text-foreground leading-tight tracking-tight mb-3">
-          All Your Cards,
+        <h1
+          className="font-display italic text-[44px] sm:text-[54px] leading-[1.1] mb-4 anim-fade-up"
+          style={{ color: 'var(--c-ink)', letterSpacing: '-0.02em', animationDelay: '60ms' }}
+        >
+          All your cards,
           <br />
-          One Place.
+          <span style={{ color: 'var(--c-blue)' }}>one place.</span>
         </h1>
 
-        <p className="text-[15px] text-muted-foreground leading-relaxed max-w-sm mb-9">
-          Store and access all your loyalty and store cards. Just tap and scan.
+        <p
+          className="text-[16px] leading-relaxed max-w-[300px] mb-10 anim-fade-up"
+          style={{ color: 'var(--c-ink-2)', animationDelay: '120ms' }}
+        >
+          Store and access all your loyalty cards. Tap any card to scan.
         </p>
 
-        <div className="flex flex-col w-full max-w-xs gap-2.5">
+        <div className="flex flex-col w-full max-w-[260px] gap-2.5 anim-fade-up" style={{ animationDelay: '180ms' }}>
           <button
             onClick={() => openAuth('signup')}
-            className="w-full bg-[#007AFF] text-white text-[15px] font-semibold py-[11px] rounded-[8px] transition-opacity hover:opacity-90 active:opacity-80"
+            className="w-full text-white text-[15px] font-semibold py-[13px] rounded-[10px] transition-opacity hover:opacity-90 active:opacity-80"
+            style={{ background: 'var(--c-blue)' }}
           >
             Get Started
           </button>
           <button
             onClick={() => openAuth('login')}
-            className="w-full text-[15px] font-medium py-[11px] rounded-[8px] transition-colors border text-foreground"
-            style={{
-              background: 'hsl(var(--card))',
-              borderColor: 'var(--mac-border-strong)',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--mac-hover)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'hsl(var(--card))')}
+            className="w-full text-[15px] font-medium py-[13px] rounded-[10px] transition-colors"
+            style={{ background: 'var(--c-white)', border: '1px solid var(--c-border)', color: 'var(--c-ink)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--c-cream-2)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--c-white)')}
           >
             Sign In
           </button>
         </div>
 
-        <div className="mt-7 flex items-center gap-1.5 text-[12px]" style={{ color: 'var(--mac-section)' }}>
+        <div
+          className="mt-8 flex items-center gap-1.5 text-[12px] anim-fade-up"
+          style={{ color: 'var(--c-ink-3)', animationDelay: '240ms' }}
+        >
           <Shield className="w-3 h-3" />
           <span>Secured with HTTP-only cookies</span>
         </div>
       </main>
 
-      <footer className="pb-8 text-center text-[12px]" style={{ color: 'var(--mac-section)' }}>
+      <footer className="pb-8 text-center text-[12px]" style={{ color: 'var(--c-ink-3)' }}>
         © 2026 Card Trooper
       </footer>
 
@@ -177,63 +165,57 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
       {isAuthOpen && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-          onClick={(e) => { if (e.target === e.currentTarget) setIsAuthOpen(false); }}
+          onClick={e => { if (e.target === e.currentTarget) setIsAuthOpen(false); }}
         >
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 backdrop-blur-sm"
-            style={{ background: 'rgba(0,0,0,0.35)' }}
-            onClick={() => setIsAuthOpen(false)}
-          />
+          <div className="absolute inset-0 backdrop-warm anim-fade-in" onClick={() => setIsAuthOpen(false)} />
 
-          {/* Dialog */}
           <div
-            className="relative w-full sm:max-w-sm mac-sheet rounded-t-[14px] sm:rounded-[14px] z-10 overflow-hidden"
-            style={{ border: '1px solid var(--mac-border-strong)', boxShadow: 'var(--mac-shadow-dialog)' }}
+            className="relative w-full sm:max-w-[380px] rounded-t-[20px] sm:rounded-[16px] z-10 overflow-hidden anim-sheet"
+            style={{
+              background: 'var(--c-white)',
+              border: '1px solid var(--c-border)',
+              boxShadow: '0 24px 64px rgba(28,25,23,0.16), 0 6px 16px rgba(28,25,23,0.08)',
+            }}
           >
-            {/* Drag handle (mobile only) */}
-            <div className="flex justify-center pt-3 pb-1 sm:hidden">
-              <div className="w-8 h-1 rounded-full" style={{ background: 'var(--mac-border-strong)' }} />
+            {/* Handle (mobile) */}
+            <div className="flex justify-center pt-3 sm:hidden">
+              <div className="w-8 h-1 rounded-full" style={{ background: 'var(--c-border-2)' }} />
             </div>
 
             {/* Header */}
             <div
-              className="flex items-center justify-between px-4 pt-4 pb-3 border-b"
-              style={{ borderColor: 'var(--mac-border)' }}
+              className="flex items-center justify-between px-5 pt-4 pb-3"
+              style={{ borderBottom: '1px solid var(--c-border)' }}
             >
-              <h2 className="text-[15px] font-semibold text-foreground">
-                {activeTab === 'login' ? 'Sign In' : 'Create Account'}
+              <h2 className="font-display italic text-[22px]" style={{ color: 'var(--c-ink)', letterSpacing: '-0.01em' }}>
+                {activeTab === 'login' ? 'Sign in.' : 'Create account.'}
               </h2>
               <button
                 onClick={() => setIsAuthOpen(false)}
-                className="w-7 h-7 rounded-full flex items-center justify-center transition-colors text-muted-foreground"
-                style={{ background: 'var(--mac-input-bg)' }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--mac-hover)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'var(--mac-input-bg)')}
+                className="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
+                style={{ background: 'var(--c-cream-2)', color: 'var(--c-ink-2)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--c-border)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'var(--c-cream-2)')}
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Segmented Control */}
+            {/* Tabs */}
             <div
-              className="mx-4 mt-3 mb-4 rounded-[7px] p-0.5 flex"
-              style={{ background: 'var(--mac-input-bg)' }}
+              className="mx-4 mt-3 mb-4 p-0.5 flex rounded-[9px]"
+              style={{ background: 'var(--c-cream-2)' }}
             >
-              {(['login', 'signup'] as const).map((tab) => (
+              {(['login', 'signup'] as const).map(tab => (
                 <button
                   key={tab}
-                  className="flex-1 py-1.5 rounded-[5px] text-[13px] font-medium transition-all"
+                  onClick={() => { setActiveTab(tab); setError(''); }}
+                  className="flex-1 py-1.5 rounded-[7px] text-[13px] font-medium transition-all"
                   style={
                     activeTab === tab
-                      ? {
-                          background: 'hsl(var(--card))',
-                          color: 'hsl(var(--foreground))',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                        }
-                      : { color: 'var(--mac-section)' }
+                      ? { background: 'var(--c-white)', color: 'var(--c-ink)', boxShadow: '0 1px 4px rgba(28,25,23,0.08)' }
+                      : { color: 'var(--c-ink-2)' }
                   }
-                  onClick={() => { setActiveTab(tab); setError(''); }}
                 >
                   {tab === 'login' ? 'Sign In' : 'Sign Up'}
                 </button>
@@ -241,57 +223,48 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
             </div>
 
             {error && (
-              <div className="mx-4 mb-3 px-3 py-2.5 rounded-[8px] bg-[#FF3B30]/10 border border-[#FF3B30]/20 text-[#FF3B30] text-[13px]">
+              <div
+                className="mx-4 mb-3 px-3.5 py-2.5 rounded-[9px] text-[13px]"
+                style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.18)', color: 'var(--c-red)' }}
+              >
                 {error}
               </div>
             )}
 
             {activeTab === 'login' ? (
-              <form onSubmit={handleLoginSubmit} className="px-4 pb-4 space-y-3">
-                <div
-                  className="rounded-[8px] overflow-hidden border"
-                  style={{ background: 'hsl(var(--card))', borderColor: 'var(--mac-border)' }}
-                >
-                  <MacInput label="Email" type="email" placeholder="you@example.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required disabled={isLoading} isFirst />
-                  <MacInput label="Password" type="password" placeholder="Required" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required disabled={isLoading} isLast />
+              <form onSubmit={handleLogin} className="px-4 pb-5 space-y-3">
+                <div className="rounded-[10px] overflow-hidden" style={{ background: 'var(--c-cream)', border: '1px solid var(--c-border)' }}>
+                  <InputRow label="Email" type="email" placeholder="you@example.com" value={loginEmail} onChange={setLoginEmail} required disabled={isLoading} />
+                  <InputRow label="Password" type="password" placeholder="Required" value={loginPassword} onChange={setLoginPassword} required disabled={isLoading} last />
                 </div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-[#007AFF] text-white text-[14px] font-semibold py-[9px] rounded-[8px] disabled:opacity-50 transition-opacity hover:opacity-90"
+                <button type="submit" disabled={isLoading}
+                  className="w-full text-white text-[14px] font-semibold py-[11px] rounded-[10px] disabled:opacity-50 transition-opacity hover:opacity-90"
+                  style={{ background: 'var(--c-blue)' }}
                 >
                   {isLoading ? 'Signing in…' : 'Sign In'}
                 </button>
               </form>
             ) : (
-              <form onSubmit={handleRegisterSubmit} className="px-4 pb-4 space-y-3">
-                <div
-                  className="rounded-[8px] overflow-hidden border"
-                  style={{ background: 'hsl(var(--card))', borderColor: 'var(--mac-border)' }}
-                >
-                  <MacInput label="Name" placeholder="Your name" value={username} onChange={e => setUsername(e.target.value)} required disabled={isLoading} isFirst />
-                  <MacInput label="Email" type="email" placeholder="you@example.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} required disabled={isLoading} />
-                  <MacInput label="Password" type="password" placeholder="Required" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} required disabled={isLoading} isLast />
+              <form onSubmit={handleRegister} className="px-4 pb-5 space-y-3">
+                <div className="rounded-[10px] overflow-hidden" style={{ background: 'var(--c-cream)', border: '1px solid var(--c-border)' }}>
+                  <InputRow label="Name" placeholder="Your name" value={username} onChange={setUsername} required disabled={isLoading} />
+                  <InputRow label="Email" type="email" placeholder="you@example.com" value={signupEmail} onChange={setSignupEmail} required disabled={isLoading} />
+                  <InputRow label="Password" type="password" placeholder="Required" value={signupPassword} onChange={setSignupPassword} required disabled={isLoading} last />
                 </div>
                 {signupPassword.length > 0 && (
                   <div className="space-y-1">
                     <div className="flex gap-1 h-1">
-                      {[0, 1, 2, 3].map((i) => (
-                        <div
-                          key={i}
-                          className={`flex-1 rounded-full transition-all duration-300 ${
-                            i < passwordStrength.score ? passwordStrength.color : 'bg-[#E5E5EA] dark:bg-[#3A3A3C]'
-                          }`}
-                        />
+                      {[0, 1, 2, 3].map(i => (
+                        <div key={i} className="flex-1 rounded-full transition-all duration-300"
+                          style={{ background: i < strength.score ? strength.color : 'var(--c-border)' }} />
                       ))}
                     </div>
-                    <p className="text-[11px] text-muted-foreground">{passwordStrength.label}</p>
+                    <p className="text-[11px]" style={{ color: 'var(--c-ink-2)' }}>{strength.label}</p>
                   </div>
                 )}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-[#007AFF] text-white text-[14px] font-semibold py-[9px] rounded-[8px] disabled:opacity-50 transition-opacity hover:opacity-90"
+                <button type="submit" disabled={isLoading}
+                  className="w-full text-white text-[14px] font-semibold py-[11px] rounded-[10px] disabled:opacity-50 transition-opacity hover:opacity-90"
+                  style={{ background: 'var(--c-blue)' }}
                 >
                   {isLoading ? 'Creating account…' : 'Create Account'}
                 </button>

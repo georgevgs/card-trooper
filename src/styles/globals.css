@@ -4,77 +4,45 @@
 
 @layer base {
   :root {
-    /* macOS Light — Tailwind HSL vars */
-    --background: 240 5% 96%;          /* #F4F4F5 */
-    --foreground: 240 3.9% 11%;        /* #1C1C1E */
-    --card: 0 0% 100%;                 /* #FFFFFF */
-    --card-foreground: 240 3.9% 11%;
+    /* Warm cream light theme */
+    --background: 55 40% 97%;           /* #FAFAF7 */
+    --foreground: 20 10% 11%;           /* #1C1917 */
+    --card: 0 0% 100%;
+    --card-foreground: 20 10% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 3.9% 11%;
-    --primary: 211 100% 50%;           /* #007AFF */
+    --popover-foreground: 20 10% 11%;
+    --primary: 211 100% 50%;            /* #007AFF */
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 4% 95%;
-    --secondary-foreground: 240 3.9% 11%;
-    --muted: 240 4% 95%;
-    --muted-foreground: 240 4% 56%;    /* #8E8E93 */
-    --accent: 211 95% 96%;
-    --accent-foreground: 211 100% 40%;
-    --destructive: 4 90% 58%;          /* #FF3B30 */
+    --secondary: 35 22% 94%;            /* #F4F1EB */
+    --secondary-foreground: 20 10% 11%;
+    --muted: 35 22% 94%;
+    --muted-foreground: 20 6% 44%;      /* #78716C */
+    --accent: 35 22% 94%;
+    --accent-foreground: 211 100% 50%;
+    --destructive: 0 72% 51%;           /* #DC2626 */
     --destructive-foreground: 0 0% 100%;
-    --border: 240 5% 90%;              /* subtle separator */
-    --input: 240 5% 90%;
+    --border: 30 14% 89%;               /* #E7E3DC */
+    --input: 30 14% 91%;
     --ring: 211 100% 50%;
-    --radius: 0.625rem;                /* 10px — macOS standard */
+    --radius: 0.875rem;
 
-    /* macOS raw values */
-    --mac-toolbar: rgba(246, 246, 246, 0.88);
-    --mac-sidebar: rgba(242, 242, 247, 0.85);
-    --mac-sheet: rgba(248, 248, 250, 0.98);
-    --mac-border: rgba(0, 0, 0, 0.08);
-    --mac-border-strong: rgba(0, 0, 0, 0.15);
-    --mac-hover: rgba(0, 0, 0, 0.04);
-    --mac-selected: rgba(0, 122, 255, 0.1);
-    --mac-section: #6E6E73;
-    --mac-input-bg: rgba(0, 0, 0, 0.05);
-    --mac-shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
-    --mac-shadow-dialog: 0 22px 70px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.1);
-  }
-
-  .dark {
-    /* macOS Dark — Tailwind HSL vars */
-    --background: 240 4% 11%;          /* #1C1C1E */
-    --foreground: 0 0% 93%;            /* #EDEDED */
-    --card: 240 4% 17%;                /* #2C2C2E */
-    --card-foreground: 0 0% 93%;
-    --popover: 240 4% 14%;             /* #242426 */
-    --popover-foreground: 0 0% 93%;
-    --primary: 211 100% 50%;           /* #007AFF stays */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 4% 18%;
-    --secondary-foreground: 0 0% 80%;
-    --muted: 240 4% 17%;
-    --muted-foreground: 240 4% 62%;    /* #98989D */
-    --accent: 211 100% 18%;
-    --accent-foreground: 211 100% 70%;
-    --destructive: 4 90% 58%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 240 4% 21%;
-    --input: 240 4% 21%;
-    --ring: 211 100% 50%;
-    --radius: 0.625rem;
-
-    /* macOS Dark raw values */
-    --mac-toolbar: rgba(28, 28, 30, 0.88);
-    --mac-sidebar: rgba(30, 30, 32, 0.9);
-    --mac-sheet: rgba(36, 36, 38, 0.98);
-    --mac-border: rgba(255, 255, 255, 0.08);
-    --mac-border-strong: rgba(255, 255, 255, 0.15);
-    --mac-hover: rgba(255, 255, 255, 0.05);
-    --mac-selected: rgba(255, 255, 255, 0.1);
-    --mac-section: #636366;
-    --mac-input-bg: rgba(255, 255, 255, 0.06);
-    --mac-shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-    --mac-shadow-dialog: 0 22px 70px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.3);
+    /* Raw palette for components */
+    --c-cream: #FAFAF7;
+    --c-cream-2: #F4F1EB;
+    --c-white: #FFFFFF;
+    --c-ink: #1C1917;
+    --c-ink-2: #78716C;
+    --c-ink-3: #A8A29E;
+    --c-ink-4: #D6D3D0;
+    --c-blue: #007AFF;
+    --c-blue-tint: #F0F7FF;
+    --c-border: #E7E3DC;
+    --c-border-2: #CCC8C0;
+    --c-red: #DC2626;
+    --c-green: #16A34A;
+    --c-shadow-warm: rgba(28, 25, 23, 0.06);
+    --c-shadow-warm-md: rgba(28, 25, 23, 0.10);
+    --c-shadow-warm-lg: rgba(28, 25, 23, 0.15);
   }
 }
 
@@ -86,6 +54,7 @@
   html {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   }
 
   html, body {
@@ -94,45 +63,34 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
-      'Helvetica Neue', Arial, sans-serif;
-    font-size: 13px;
+    background-color: var(--c-cream);
+    color: var(--c-ink);
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Prevent iOS input zoom — keep 16px on mobile */
   input, select, textarea {
     font-size: 16px !important;
   }
 
   @media (min-width: 640px) {
     input, select, textarea {
-      font-size: 13px !important;
+      font-size: 14px !important;
     }
   }
 
-  /* macOS-style thin scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  /* Warm thin scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.2);
+    background: var(--c-ink-4);
     border-radius: 99px;
   }
-  .dark ::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.15);
-  }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0,0,0,0.35);
-  }
-  .dark ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.25);
+    background: var(--c-ink-3);
   }
 
   /* Color input */
@@ -141,19 +99,19 @@
     appearance: none;
     cursor: pointer;
     background: none;
-    min-height: 28px;
-    min-width: 28px;
+    min-height: 32px;
+    min-width: 32px;
   }
   input[type='color']::-webkit-color-swatch-wrapper {
     padding: 0;
-    border-radius: 6px;
+    border-radius: 7px;
   }
   input[type='color']::-webkit-color-swatch {
     border: none;
-    border-radius: 6px;
+    border-radius: 7px;
   }
   input[type='color']:focus {
-    outline: 2px solid #007AFF;
+    outline: 2px solid var(--c-blue);
     outline-offset: 2px;
   }
 }
@@ -164,36 +122,74 @@
     -webkit-appearance: none;
     margin: 0;
   }
-  .no-spinner {
-    -moz-appearance: textfield;
+  .no-spinner { -moz-appearance: textfield; }
+
+  .font-display {
+    font-family: 'DM Serif Display', Georgia, 'Times New Roman', serif;
   }
 
-  /* Frosted glass */
-  .mac-toolbar {
-    background: var(--mac-toolbar);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-  }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+}
 
-  .mac-sheet {
-    background: var(--mac-sheet);
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-  }
+/* ─── Animations ──────────────────────────────────────────── */
 
-  /* Card hover */
-  .mac-card {
-    transition: box-shadow 0.15s ease, background 0.1s ease;
-  }
-  .mac-card:hover {
-    background: var(--mac-hover);
-  }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-  /* Safe area support */
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .pt-safe {
-    padding-top: env(safe-area-inset-top);
-  }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes slideUpSheet {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.anim-fade-up {
+  animation: fadeUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.anim-fade-in {
+  animation: fadeIn 0.25s ease both;
+}
+
+.anim-scale-in {
+  animation: scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.anim-sheet {
+  animation: slideUpSheet 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Card grid stagger ───────────────────────────────────── */
+
+.card-item {
+  animation: fadeUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.card-item:nth-child(1)  { animation-delay: 0ms; }
+.card-item:nth-child(2)  { animation-delay: 55ms; }
+.card-item:nth-child(3)  { animation-delay: 110ms; }
+.card-item:nth-child(4)  { animation-delay: 165ms; }
+.card-item:nth-child(5)  { animation-delay: 220ms; }
+.card-item:nth-child(6)  { animation-delay: 275ms; }
+.card-item:nth-child(7)  { animation-delay: 330ms; }
+.card-item:nth-child(8)  { animation-delay: 385ms; }
+.card-item:nth-child(9)  { animation-delay: 440ms; }
+.card-item:nth-child(n+10) { animation-delay: 440ms; }
+
+/* ─── Backdrop ────────────────────────────────────────────── */
+
+.backdrop-warm {
+  background: rgba(28, 25, 23, 0.40);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }

@@ -4,6 +4,7 @@ import StoreCard from '@/components/StoreCard';
 import DeleteCardDialog from '@/components/DeleteCardDialog';
 import FullScreenCard from '@/components/FullScreenCard';
 import type { StoreCardType } from '@/types/storecard';
+import { ICONS } from '@/lib/icons';
 
 type CardListProps = {
   cards: StoreCardType[];
@@ -18,47 +19,39 @@ const CardList = ({ cards, onDeleteCard, isSearchVisible }: CardListProps) => {
   const [filteredCards, setFilteredCards] = useState<StoreCardType[]>(cards);
 
   useEffect(() => {
-    const filtered = cards.filter((card) =>
-      card.storeName.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-    setFilteredCards(filtered);
+    setFilteredCards(cards.filter(c =>
+      c.storeName.toLowerCase().includes(searchTerm.toLowerCase())
+    ));
   }, [searchTerm, cards]);
 
-  const handleDeleteCard = (id: number) => {
-    onDeleteCard(id);
-    setDeleteCardId(null);
-  };
-
-  const clearSearch = () => setSearchTerm('');
+  const handleDeleteCard = (id: number) => { onDeleteCard(id); setDeleteCardId(null); };
 
   return (
     <>
       {/* Search bar */}
       {isSearchVisible && (
-        <div className="mb-4">
+        <div className="mb-5 anim-fade-up">
           <div
-            className="flex items-center rounded-[8px] px-3 gap-2 border"
-            style={{
-              background: 'var(--mac-input-bg)',
-              borderColor: 'var(--mac-border)',
-            }}
+            className="flex items-center rounded-[10px] px-3.5 gap-2.5"
+            style={{ background: 'var(--c-white)', border: '1px solid var(--c-border)', boxShadow: '0 1px 3px var(--c-shadow-warm)' }}
           >
-            <Search className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--mac-section)' }} />
+            <Search className="w-4 h-4 shrink-0" style={{ color: 'var(--c-ink-3)' }} />
             <input
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search"
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Search cards…"
               autoFocus
-              className="flex-1 py-2 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+              className="flex-1 py-3 bg-transparent outline-none"
+              style={{ color: 'var(--c-ink)', fontSize: '15px' }}
             />
             {searchTerm && (
               <button
-                onClick={clearSearch}
-                className="rounded-full p-0.5 transition-colors"
-                style={{ color: 'var(--mac-section)' }}
+                onClick={() => setSearchTerm('')}
+                className="w-5 h-5 rounded-full flex items-center justify-center"
+                style={{ background: 'var(--c-ink-4)' }}
               >
-                <X className="h-3 w-3" />
+                <X className="w-3 h-3" style={{ color: 'var(--c-ink-2)' }} />
               </button>
             )}
           </div>
@@ -67,55 +60,69 @@ const CardList = ({ cards, onDeleteCard, isSearchVisible }: CardListProps) => {
 
       {/* Section header */}
       {!isSearchVisible && cards.length > 0 && (
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--mac-section)' }}>
+        <div className="mb-4 flex items-center justify-between anim-fade-up">
+          <span
+            className="text-[11px] font-semibold uppercase tracking-[0.08em]"
+            style={{ color: 'var(--c-ink-3)' }}
+          >
             My Cards
-          </p>
-          <p className="text-[11px]" style={{ color: 'var(--mac-section)' }}>
-            {cards.length} {cards.length === 1 ? 'card' : 'cards'}
-          </p>
+          </span>
+          <span className="text-[11px] font-medium tabular-nums" style={{ color: 'var(--c-ink-3)' }}>
+            {cards.length}
+          </span>
         </div>
       )}
 
       {/* Empty state */}
       {filteredCards.length === 0 && !isSearchVisible && (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div
-            className="w-14 h-14 rounded-[12px] flex items-center justify-center mb-4"
-            style={{ background: 'var(--mac-input-bg)', border: '1px solid var(--mac-border)' }}
+        <div className="flex flex-col items-center justify-center py-20 text-center anim-fade-up">
+          <img
+            src={ICONS.wallet}
+            alt="Empty wallet"
+            className="w-24 h-24 object-contain mb-5"
+            style={{ filter: 'drop-shadow(0 8px 16px rgba(28,25,23,0.12))' }}
+          />
+          <h3
+            className="font-display italic text-[26px] mb-2"
+            style={{ color: 'var(--c-ink)', letterSpacing: '-0.01em' }}
           >
-            <svg
-              className="w-7 h-7"
-              style={{ color: 'var(--mac-section)' }}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.5}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-            </svg>
-          </div>
-          <p className="text-[15px] font-semibold text-foreground mb-1">No Cards Yet</p>
-          <p className="text-[13px] text-muted-foreground">Click + to add your first card</p>
+            No cards yet.
+          </h3>
+          <p className="text-[14px] leading-relaxed max-w-[220px]" style={{ color: 'var(--c-ink-2)' }}>
+            Tap the + button to add your first loyalty card
+          </p>
         </div>
       )}
 
       {filteredCards.length === 0 && isSearchVisible && searchTerm && (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-[15px] font-semibold text-foreground mb-1">No Results</p>
-          <p className="text-[13px] text-muted-foreground">No cards matching "{searchTerm}"</p>
+        <div className="flex flex-col items-center justify-center py-20 text-center anim-fade-up">
+          <img
+            src={ICONS.shoppingBag}
+            alt=""
+            className="w-16 h-16 object-contain mb-4 opacity-60"
+          />
+          <h3
+            className="font-display italic text-[22px] mb-1"
+            style={{ color: 'var(--c-ink)', letterSpacing: '-0.01em' }}
+          >
+            No results.
+          </h3>
+          <p className="text-[14px]" style={{ color: 'var(--c-ink-2)' }}>
+            No cards matching "{searchTerm}"
+          </p>
         </div>
       )}
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {filteredCards.map((card) => (
-          <StoreCard
-            key={card.id}
-            card={card}
-            onCardClick={setFullScreenCard}
-            onDeleteClick={() => setDeleteCardId(card.id)}
-          />
+        {filteredCards.map(card => (
+          <div key={card.id} className="card-item">
+            <StoreCard
+              card={card}
+              onCardClick={setFullScreenCard}
+              onDeleteClick={() => setDeleteCardId(card.id)}
+            />
+          </div>
         ))}
       </div>
 

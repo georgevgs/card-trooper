@@ -17,14 +17,21 @@ const { title } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
 
-    <!-- Security Headers -->
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Serif+Display:ital@1&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Security -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#F4F4F5" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1C1C1E" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#FAFAF7" />
 
     <!-- Apple -->
     <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />
@@ -35,23 +42,6 @@ const { title } = Astro.props;
     <meta name="format-detection" content="telephone=no" />
 
     <title>{title}</title>
-
-    <!-- Dark mode detection — must run before first paint -->
-    <script is:inline>
-      (function () {
-        const stored = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (stored === 'dark' || (!stored && prefersDark)) {
-          document.documentElement.classList.add('dark');
-        }
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
-          if (!localStorage.getItem('theme')) {
-            if (e.matches) document.documentElement.classList.add('dark');
-            else document.documentElement.classList.remove('dark');
-          }
-        });
-      })();
-    </script>
   </head>
   <body>
     <slot />

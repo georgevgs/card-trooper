@@ -33,31 +33,26 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     };
   }, []);
 
-  useEffect(() => {
-    loadCards();
-  }, []);
+  useEffect(() => { loadCards(); }, []);
 
   const loadCardsFromCache = (): StoreCardType[] => {
-    const cachedData = localStorage.getItem(CACHE_KEY);
-    return cachedData ? JSON.parse(cachedData) : [];
+    const cached = localStorage.getItem(CACHE_KEY);
+    return cached ? JSON.parse(cached) : [];
   };
 
-  const saveCardsToCache = (cardsToCache: StoreCardType[]) => {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cardsToCache));
-  };
+  const saveCardsToCache = (c: StoreCardType[]) =>
+    localStorage.setItem(CACHE_KEY, JSON.stringify(c));
 
   const loadCards = async () => {
     setIsLoadingCards(true);
-    const cachedCards = loadCardsFromCache();
-    setCards(cachedCards);
-
+    setCards(loadCardsFromCache());
     if (navigator.onLine) {
       try {
-        const fetchedCards = await AuthService.fetchCards();
-        setCards(fetchedCards);
-        saveCardsToCache(fetchedCards);
-      } catch (error) {
-        console.error('Failed to fetch cards:', error);
+        const fetched = await AuthService.fetchCards();
+        setCards(fetched);
+        saveCardsToCache(fetched);
+      } catch (e) {
+        console.error('Failed to fetch cards:', e);
       }
     }
     setIsLoadingCards(false);
@@ -67,15 +62,15 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     setIsAddingCard(true);
     try {
       if (navigator.onLine) {
-        const addedCard = await AuthService.addCard(newCardData);
-        updateCardsState(addedCard);
+        const added = await AuthService.addCard(newCardData);
+        setCards(prev => { const u = [...prev, added]; saveCardsToCache(u); return u; });
       } else {
-        const offlineCard = createOfflineCard(newCardData);
-        updateCardsState(offlineCard);
+        const offline = { ...newCardData, id: Date.now(), isOffline: true };
+        setCards(prev => { const u = [...prev, offline]; saveCardsToCache(u); return u; });
       }
       setIsAddCardOpen(false);
-    } catch (error) {
-      console.error('Failed to add card:', error);
+    } catch (e) {
+      console.error('Failed to add card:', e);
     } finally {
       setIsAddingCard(false);
     }
@@ -83,48 +78,22 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
 
   const handleDeleteCard = async (id: number) => {
     try {
-      if (navigator.onLine) {
-        await AuthService.deleteCard(id);
-      }
-      removeCardFromState(id);
-    } catch (error) {
-      console.error('Failed to delete card:', error);
+      if (navigator.onLine) await AuthService.deleteCard(id);
+      setCards(prev => { const u = prev.filter(c => c.id !== id); saveCardsToCache(u); return u; });
+    } catch (e) {
+      console.error('Failed to delete card:', e);
     }
   };
 
-  const updateCardsState = (newCard: StoreCardType) => {
-    setCards((prevCards) => {
-      const updatedCards = [...prevCards, newCard];
-      saveCardsToCache(updatedCards);
-      return updatedCards;
-    });
-  };
-
-  const removeCardFromState = (id: number) => {
-    setCards((prevCards) => {
-      const updatedCards = prevCards.filter((card) => card.id !== id);
-      saveCardsToCache(updatedCards);
-      return updatedCards;
-    });
-  };
-
-  const createOfflineCard = (cardData: Omit<StoreCardType, 'id'>): StoreCardType => ({
-    ...cardData,
-    id: Date.now(),
-    isOffline: true,
-  });
-
-  const toggleSearch = () => setIsSearchVisible(!isSearchVisible);
-
   return (
-    <div className="min-h-screen w-full bg-background">
+    <div className="min-h-screen" style={{ background: 'var(--c-cream)' }}>
       <Header
         onAddCard={() => setIsAddCardOpen(true)}
         onLogout={onLogout}
-        onToggleSearch={toggleSearch}
+        onToggleSearch={() => setIsSearchVisible(v => !v)}
         isAddingCard={isAddingCard}
       />
-      <main className="max-w-5xl mx-auto px-4 py-5 sm:px-6">
+      <main className="max-w-5xl mx-auto px-4 pt-6 pb-4 sm:px-6">
         {isLoadingCards ? (
           <LoadingScreen />
         ) : (
