@@ -12,6 +12,13 @@ const SECURITY_HEADERS: Record<string, string> = {
 
 export const onRequest = defineMiddleware(async (_context, next) => {
   const response = await next();
+
+  // Security headers are production-only — applying them in dev breaks
+  // the Astro/Vite HMR WebSocket, which corrupts React module deduplication.
+  if (import.meta.env.DEV) {
+    return response;
+  }
+
   const headers = new Headers(response.headers);
 
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
