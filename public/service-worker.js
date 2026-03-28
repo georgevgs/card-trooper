@@ -1,5 +1,5 @@
-const CACHE_NAME = 'card-trooper-cache-v3';
-const DYNAMIC_CACHE_NAME = 'card-trooper-dynamic-cache-v3';
+const CACHE_NAME = 'card-trooper-cache-v4';
+const DYNAMIC_CACHE_NAME = 'card-trooper-dynamic-cache-v4';
 
 const urlsToCache = [
   '/',
@@ -8,6 +8,14 @@ const urlsToCache = [
   '/manifest.json',
   '/favicon/favicon.ico',
   '/favicon/apple-touch-icon.png',
+  // 3D icons (Vercel blob CDN) — precached so they work offline
+  'https://lftz25oez4aqbxpq.public.blob.vercel-storage.com/image-r5QxxRu1dvIND6CpaRBYLTnJmCfzNM.png',
+  'https://lftz25oez4aqbxpq.public.blob.vercel-storage.com/image-BwCpmJXm80olWn4SbwsWSCKjFch3nc.png',
+  'https://lftz25oez4aqbxpq.public.blob.vercel-storage.com/image-hheqtvAvZLesg9WYTVCosfDrtUtC7H.png',
+  'https://lftz25oez4aqbxpq.public.blob.vercel-storage.com/image-1kzlhXN3lasEQYBtwdeQrzzhBEwurX.png',
+  'https://lftz25oez4aqbxpq.public.blob.vercel-storage.com/image-ptreaSKDFQqhY7oF7Qw6s18YOwh68e.png',
+  'https://lftz25oez4aqbxpq.public.blob.vercel-storage.com/image-wNxdFQYtpHI7REu4Ulzsvi37XAhYH4.png',
+  'https://lftz25oez4aqbxpq.public.blob.vercel-storage.com/image-6RTw7Ifo1xhDr9ETjDBjMGv5S5YzTi.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -20,7 +28,6 @@ self.addEventListener('install', (event) => {
       );
     }),
   );
-  // Activate immediately so the new SW takes over
   self.skipWaiting();
 });
 
@@ -42,23 +49,39 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
   // Never intercept API or auth requests — let the browser handle them
-  // natively with full cookie/credential support. This is critical for
-  // iOS PWA standalone mode where re-issuing fetch() from the SW scope
-  // can strip credentials.
+  // natively with full cookie/credential support.
   if (url.pathname.startsWith('/api/')) {
     return;
   }
 
-  // Ignore non-http(s) and extension URLs
   if (!url.protocol.startsWith('http')) {
     return;
   }
 
-  // Non-GET requests (other than API): pass through without caching
   if (event.request.method !== 'GET') {
     return;
   }
 
+  // Navigation requests (HTML): network-first for fresh content
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          return caches.match(event.request)
+            .then((cached) => cached || caches.match('/offline.html'));
+        }),
+    );
+    return;
+  }
+
+  // All other assets (JS, CSS, images, fonts): cache-first
   event.respondWith(
     caches
       .match(event.request)
@@ -68,7 +91,11 @@ self.addEventListener('fetch', (event) => {
         }
 
         return fetch(event.request).then((fetchResponse) => {
-          if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
+          if (
+            !fetchResponse ||
+            fetchResponse.status !== 200 ||
+            (fetchResponse.type !== 'basic' && fetchResponse.type !== 'cors')
+          ) {
             return fetchResponse;
           }
 
@@ -81,9 +108,7 @@ self.addEventListener('fetch', (event) => {
         });
       })
       .catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/offline.html');
-        }
+        // Asset failed to load and not in cache — fail silently
       }),
   );
 });

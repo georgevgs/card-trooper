@@ -22,7 +22,7 @@ const CardCode = ({ card }: CardCodeProps) => {
         marginBottom: 6,
         textMargin: 2,
         background: 'transparent',
-        lineColor: '#1C1C1E',
+        lineColor: '#111827',
       });
     }
   }, [card]);

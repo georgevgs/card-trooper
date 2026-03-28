@@ -1,39 +1,43 @@
 import React, { useState } from 'react';
-import { Shield, X } from 'lucide-react';
-import { ICONS } from '@/lib/icons';
+import { Lock, X } from 'lucide-react';
 
 interface WelcomePageProps {
   onLogin: (email: string, password: string) => Promise<void>;
   onRegister: (username: string, email: string, password: string) => Promise<void>;
 }
 
-function getPasswordStrength(password: string): { score: number; label: string; color: string } {
-  if (password.length === 0) return { score: 0, label: '', color: '' };
-  let score = 0;
-  if (password.length >= 8) score++;
-  if (/[A-Z]/.test(password)) score++;
-  if (/[0-9]/.test(password)) score++;
-  if (/[^A-Za-z0-9]/.test(password)) score++;
-  const levels = [
-    { label: 'Weak', color: '#DC2626' },
-    { label: 'Fair', color: '#D97706' },
-    { label: 'Good', color: '#CA8A04' },
-    { label: 'Strong', color: '#16A34A' },
-    { label: 'Very Strong', color: '#16A34A' },
-  ];
-  return { score, ...levels[score] };
+function getPasswordStrength(pw: string) {
+  if (!pw.length) return { score: 0, label: '', color: '' };
+  let s = 0;
+  if (pw.length >= 8) s++;
+  if (/[A-Z]/.test(pw)) s++;
+  if (/[0-9]/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  return [
+    { score: s, label: 'Weak', color: 'var(--red)' },
+    { score: s, label: 'Fair', color: 'var(--amber)' },
+    { score: s, label: 'Good', color: 'var(--brand-pink)' },
+    { score: s, label: 'Strong', color: 'var(--green)' },
+    { score: s, label: 'Strong', color: 'var(--green)' },
+  ][s];
 }
 
-const InputRow: React.FC<{
+const Bolt: React.FC<{ color: string; size?: number; className?: string; style?: React.CSSProperties }> = ({ color, size = 48, className, style }) => (
+  <svg width={size} height={size} viewBox="0 0 48 48" fill="none" className={className} style={style}>
+    <path d="M28 4L12 26h10l-4 18 20-24H26z" fill={color} />
+  </svg>
+);
+
+const Field: React.FC<{
   label: string; type?: string; placeholder: string;
   value: string; onChange: (v: string) => void;
   required?: boolean; disabled?: boolean; last?: boolean;
 }> = ({ label, type = 'text', placeholder, value, onChange, required, disabled, last }) => (
   <div
     className="flex items-center px-4 gap-3"
-    style={{ borderBottom: last ? 'none' : '1px solid var(--c-border)' }}
+    style={{ borderBottom: last ? 'none' : '1px solid var(--border-default)' }}
   >
-    <label className="text-[13px] font-medium w-20 shrink-0 py-3 select-none" style={{ color: 'var(--c-ink-2)' }}>
+    <label className="text-[13px] font-medium w-20 shrink-0 py-3 select-none" style={{ color: 'var(--text-2)' }}>
       {label}
     </label>
     <input
@@ -41,7 +45,7 @@ const InputRow: React.FC<{
       onChange={e => onChange(e.target.value)}
       required={required} disabled={disabled}
       className="flex-1 py-3 bg-transparent outline-none disabled:opacity-50"
-      style={{ color: 'var(--c-ink)', fontSize: '15px' }}
+      style={{ color: 'var(--text-1)' }}
     />
   </div>
 );
@@ -66,155 +70,132 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault(); setError(''); setIsLoading(true);
     try { await onLogin(loginEmail, loginPassword); }
-    catch (err) { setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.'); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Login failed. Check your credentials.'); }
     finally { setIsLoading(false); }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault(); setError(''); setIsLoading(true);
     try { await onRegister(username, signupEmail, signupPassword); }
-    catch (err) { setError(err instanceof Error ? err.message : 'Registration failed. Please try again.'); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Registration failed. Try again.'); }
     finally { setIsLoading(false); }
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--c-cream)' }}>
-      {/* Nav */}
+    <div className="min-h-screen flex flex-col overflow-hidden" style={{ background: 'var(--bg)' }}>
       <nav
-        className="flex justify-between items-center px-5 h-[52px] bg-white"
-        style={{ borderBottom: '1px solid var(--c-border)' }}
+        className="relative z-10 flex justify-between items-center px-5 h-[52px]"
+        style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border-default)' }}
       >
         <div className="flex items-center gap-2">
-          <img src={ICONS.wallet} alt="" className="w-7 h-7 object-contain" />
-          <span className="font-display italic text-[17px]" style={{ color: 'var(--c-ink)' }}>
-            Card Trooper
-          </span>
+          <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+            <path d="M28 4L12 26h10l-4 18 20-24H26z" fill="var(--brand-pink)" />
+          </svg>
+          <span className="text-[15px] font-semibold" style={{ color: 'var(--text-1)' }}>Card Trooper</span>
         </div>
         <button
           onClick={() => openAuth('login')}
-          className="text-[14px] font-medium px-3 py-1.5 rounded-[8px] transition-colors"
-          style={{ color: 'var(--c-blue)' }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'var(--c-cream-2)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          className="text-[14px] font-medium px-3 py-1.5 rounded-lg btn-ghost-accent"
         >
           Sign In
         </button>
       </nav>
 
-      {/* Hero */}
-      <main className="flex-grow flex flex-col justify-center items-center text-center px-6 py-16">
-        {/* Thiings credit card icon */}
-        <div className="mb-8 anim-fade-up">
-          <img
-            src={ICONS.wallet}
-            alt="Wallet"
-            className="w-28 h-28 object-contain drop-shadow-xl"
-            style={{ animationDelay: '0ms' }}
-          />
-        </div>
+      <main className="relative flex-1 flex flex-col justify-center items-center text-center px-6 py-16">
+        {/* Decorative bolts */}
+        <Bolt color="#4DA6FF" size={72} className="absolute opacity-[0.12]" style={{ top: '8%', left: '6%', transform: 'rotate(-18deg)' }} />
+        <Bolt color="#FF2D78" size={56} className="absolute opacity-[0.10]" style={{ top: '14%', right: '10%', transform: 'rotate(12deg)' }} />
+        <Bolt color="#00C9A7" size={64} className="absolute opacity-[0.10]" style={{ bottom: '18%', left: '8%', transform: 'rotate(-8deg)' }} />
+        <Bolt color="#FF6B35" size={48} className="absolute opacity-[0.08]" style={{ bottom: '12%', right: '6%', transform: 'rotate(22deg)' }} />
+        <Bolt color="#7B2FF2" size={40} className="absolute opacity-[0.08]" style={{ top: '42%', right: '4%', transform: 'rotate(-15deg)' }} />
 
-        <h1
-          className="font-display italic text-[44px] sm:text-[54px] leading-[1.1] mb-4 anim-fade-up"
-          style={{ color: 'var(--c-ink)', letterSpacing: '-0.02em', animationDelay: '60ms' }}
-        >
-          All your cards,
-          <br />
-          <span style={{ color: 'var(--c-blue)' }}>one place.</span>
-        </h1>
+        <div className="relative z-10">
+          <div className="anim-slide-up mb-6">
+            <svg width="64" height="64" viewBox="0 0 48 48" fill="none" className="mx-auto">
+              <path d="M30 3L10 28h12l-4 17 22-26H27z" fill="var(--brand-blue)" />
+              <path d="M28 5L9 29h11l-3 15 20-24H26z" fill="var(--brand-pink)" opacity="0.82" />
+            </svg>
+          </div>
 
-        <p
-          className="text-[16px] leading-relaxed max-w-[300px] mb-10 anim-fade-up"
-          style={{ color: 'var(--c-ink-2)', animationDelay: '120ms' }}
-        >
-          Store and access all your loyalty cards. Tap any card to scan.
-        </p>
-
-        <div className="flex flex-col w-full max-w-[260px] gap-2.5 anim-fade-up" style={{ animationDelay: '180ms' }}>
-          <button
-            onClick={() => openAuth('signup')}
-            className="w-full text-white text-[15px] font-semibold py-[13px] rounded-[10px] transition-opacity hover:opacity-90 active:opacity-80"
-            style={{ background: 'var(--c-blue)' }}
+          <h1
+            className="text-[40px] sm:text-[52px] font-extrabold leading-[1.05] mb-4 anim-slide-up"
+            style={{ color: 'var(--text-1)', letterSpacing: '-0.03em', animationDelay: '50ms' }}
           >
-            Get Started
-          </button>
-          <button
-            onClick={() => openAuth('login')}
-            className="w-full text-[15px] font-medium py-[13px] rounded-[10px] transition-colors"
-            style={{ background: 'var(--c-white)', border: '1px solid var(--c-border)', color: 'var(--c-ink)' }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--c-cream-2)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'var(--c-white)')}
-          >
-            Sign In
-          </button>
-        </div>
+            All your cards,<br />
+            <span style={{ color: 'var(--brand-pink)' }}>one tap.</span>
+          </h1>
 
-        <div
-          className="mt-8 flex items-center gap-1.5 text-[12px] anim-fade-up"
-          style={{ color: 'var(--c-ink-3)', animationDelay: '240ms' }}
-        >
-          <Shield className="w-3 h-3" />
-          <span>Secured with HTTP-only cookies</span>
+          <p
+            className="text-[15px] leading-relaxed max-w-[280px] mx-auto mb-10 anim-slide-up"
+            style={{ color: 'var(--text-2)', animationDelay: '100ms' }}
+          >
+            Store every loyalty card and scan instantly at checkout.
+          </p>
+
+          <div className="flex flex-col w-full max-w-[260px] mx-auto gap-2.5 anim-slide-up" style={{ animationDelay: '150ms' }}>
+            <button
+              onClick={() => openAuth('signup')}
+              className="w-full text-[15px] py-3 rounded-lg btn-primary"
+            >
+              Get Started
+            </button>
+            <button
+              onClick={() => openAuth('login')}
+              className="w-full text-[15px] py-3 rounded-lg btn-outline"
+            >
+              Sign In
+            </button>
+          </div>
+
+          <div className="mt-8 flex items-center justify-center gap-1.5 text-[12px] anim-slide-up" style={{ color: 'var(--text-3)', animationDelay: '200ms' }}>
+            <Lock className="w-3 h-3" />
+            <span>Secured with HTTP-only cookies</span>
+          </div>
         </div>
       </main>
 
-      <footer className="pb-8 text-center text-[12px]" style={{ color: 'var(--c-ink-3)' }}>
-        © 2026 Card Trooper
+      <footer className="relative z-10 pb-8 text-center text-[12px]" style={{ color: 'var(--text-3)' }}>
+        &copy; 2026 Card Trooper
       </footer>
 
-      {/* Auth dialog */}
       {isAuthOpen && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
           onClick={e => { if (e.target === e.currentTarget) setIsAuthOpen(false); }}
         >
-          <div className="absolute inset-0 backdrop-warm anim-fade-in" onClick={() => setIsAuthOpen(false)} />
+          <div className="absolute inset-0 overlay anim-fade-in" onClick={() => setIsAuthOpen(false)} />
 
           <div
-            className="relative w-full sm:max-w-[380px] rounded-t-[20px] sm:rounded-[16px] z-10 overflow-hidden anim-sheet"
-            style={{
-              background: 'var(--c-white)',
-              border: '1px solid var(--c-border)',
-              boxShadow: '0 24px 64px rgba(28,25,23,0.16), 0 6px 16px rgba(28,25,23,0.08)',
-            }}
+            className="relative w-full sm:max-w-[380px] rounded-t-2xl sm:rounded-xl z-10 overflow-hidden anim-slide-up"
+            style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-overlay)' }}
           >
-            {/* Handle (mobile) */}
             <div className="flex justify-center pt-3 sm:hidden">
-              <div className="w-8 h-1 rounded-full" style={{ background: 'var(--c-border-2)' }} />
+              <div className="w-8 h-1 rounded-full" style={{ background: 'var(--border-strong)' }} />
             </div>
 
-            {/* Header */}
-            <div
-              className="flex items-center justify-between px-5 pt-4 pb-3"
-              style={{ borderBottom: '1px solid var(--c-border)' }}
-            >
-              <h2 className="font-display italic text-[22px]" style={{ color: 'var(--c-ink)', letterSpacing: '-0.01em' }}>
-                {activeTab === 'login' ? 'Sign in.' : 'Create account.'}
+            <div className="flex items-center justify-between px-5 pt-4 pb-3" style={{ borderBottom: '1px solid var(--border-default)' }}>
+              <h2 className="text-[18px] font-semibold" style={{ color: 'var(--text-1)' }}>
+                {activeTab === 'login' ? 'Sign in' : 'Create account'}
               </h2>
               <button
                 onClick={() => setIsAuthOpen(false)}
-                className="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
-                style={{ background: 'var(--c-cream-2)', color: 'var(--c-ink-2)' }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--c-border)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'var(--c-cream-2)')}
+                className="w-7 h-7 rounded-full flex items-center justify-center btn-ghost"
+                style={{ color: 'var(--text-3)' }}
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Tabs */}
-            <div
-              className="mx-4 mt-3 mb-4 p-0.5 flex rounded-[9px]"
-              style={{ background: 'var(--c-cream-2)' }}
-            >
+            <div className="mx-4 mt-3 mb-4 p-0.5 flex rounded-lg" style={{ background: 'var(--surface-hover)' }}>
               {(['login', 'signup'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => { setActiveTab(tab); setError(''); }}
-                  className="flex-1 py-1.5 rounded-[7px] text-[13px] font-medium transition-all"
+                  className="flex-1 py-1.5 rounded-md text-[13px] font-medium transition-all"
                   style={
                     activeTab === tab
-                      ? { background: 'var(--c-white)', color: 'var(--c-ink)', boxShadow: '0 1px 4px rgba(28,25,23,0.08)' }
-                      : { color: 'var(--c-ink-2)' }
+                      ? { background: 'var(--surface)', color: 'var(--text-1)', boxShadow: 'var(--shadow-xs)' }
+                      : { color: 'var(--text-3)' }
                   }
                 >
                   {tab === 'login' ? 'Sign In' : 'Sign Up'}
@@ -223,50 +204,41 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
             </div>
 
             {error && (
-              <div
-                className="mx-4 mb-3 px-3.5 py-2.5 rounded-[9px] text-[13px]"
-                style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.18)', color: 'var(--c-red)' }}
-              >
+              <div className="mx-4 mb-3 px-3 py-2.5 rounded-lg text-[13px]" style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: 'var(--red)' }}>
                 {error}
               </div>
             )}
 
             {activeTab === 'login' ? (
               <form onSubmit={handleLogin} className="px-4 pb-5 space-y-3">
-                <div className="rounded-[10px] overflow-hidden" style={{ background: 'var(--c-cream)', border: '1px solid var(--c-border)' }}>
-                  <InputRow label="Email" type="email" placeholder="you@example.com" value={loginEmail} onChange={setLoginEmail} required disabled={isLoading} />
-                  <InputRow label="Password" type="password" placeholder="Required" value={loginPassword} onChange={setLoginPassword} required disabled={isLoading} last />
+                <div className="rounded-lg overflow-hidden" style={{ background: 'var(--bg)', border: '1px solid var(--border-default)' }}>
+                  <Field label="Email" type="email" placeholder="you@example.com" value={loginEmail} onChange={setLoginEmail} required disabled={isLoading} />
+                  <Field label="Password" type="password" placeholder="Required" value={loginPassword} onChange={setLoginPassword} required disabled={isLoading} last />
                 </div>
-                <button type="submit" disabled={isLoading}
-                  className="w-full text-white text-[14px] font-semibold py-[11px] rounded-[10px] disabled:opacity-50 transition-opacity hover:opacity-90"
-                  style={{ background: 'var(--c-blue)' }}
-                >
-                  {isLoading ? 'Signing in…' : 'Sign In'}
+                <button type="submit" disabled={isLoading} className="w-full text-[14px] py-2.5 rounded-lg btn-primary">
+                  {isLoading ? 'Signing in\u2026' : 'Sign In'}
                 </button>
               </form>
             ) : (
               <form onSubmit={handleRegister} className="px-4 pb-5 space-y-3">
-                <div className="rounded-[10px] overflow-hidden" style={{ background: 'var(--c-cream)', border: '1px solid var(--c-border)' }}>
-                  <InputRow label="Name" placeholder="Your name" value={username} onChange={setUsername} required disabled={isLoading} />
-                  <InputRow label="Email" type="email" placeholder="you@example.com" value={signupEmail} onChange={setSignupEmail} required disabled={isLoading} />
-                  <InputRow label="Password" type="password" placeholder="Required" value={signupPassword} onChange={setSignupPassword} required disabled={isLoading} last />
+                <div className="rounded-lg overflow-hidden" style={{ background: 'var(--bg)', border: '1px solid var(--border-default)' }}>
+                  <Field label="Name" placeholder="Your name" value={username} onChange={setUsername} required disabled={isLoading} />
+                  <Field label="Email" type="email" placeholder="you@example.com" value={signupEmail} onChange={setSignupEmail} required disabled={isLoading} />
+                  <Field label="Password" type="password" placeholder="Required" value={signupPassword} onChange={setSignupPassword} required disabled={isLoading} last />
                 </div>
                 {signupPassword.length > 0 && (
                   <div className="space-y-1">
                     <div className="flex gap-1 h-1">
                       {[0, 1, 2, 3].map(i => (
-                        <div key={i} className="flex-1 rounded-full transition-all duration-300"
-                          style={{ background: i < strength.score ? strength.color : 'var(--c-border)' }} />
+                        <div key={i} className="flex-1 rounded-full transition-all duration-200"
+                          style={{ background: i < strength.score ? strength.color : 'var(--border-default)' }} />
                       ))}
                     </div>
-                    <p className="text-[11px]" style={{ color: 'var(--c-ink-2)' }}>{strength.label}</p>
+                    <p className="text-[11px]" style={{ color: 'var(--text-2)' }}>{strength.label}</p>
                   </div>
                 )}
-                <button type="submit" disabled={isLoading}
-                  className="w-full text-white text-[14px] font-semibold py-[11px] rounded-[10px] disabled:opacity-50 transition-opacity hover:opacity-90"
-                  style={{ background: 'var(--c-blue)' }}
-                >
-                  {isLoading ? 'Creating account…' : 'Create Account'}
+                <button type="submit" disabled={isLoading} className="w-full text-[14px] py-2.5 rounded-lg btn-primary">
+                  {isLoading ? 'Creating account\u2026' : 'Create Account'}
                 </button>
               </form>
             )}
