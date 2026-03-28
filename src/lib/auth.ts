@@ -3,10 +3,11 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { createDb } from '@/db/index';
 import * as schema from '@/db/schema';
 
-export function createAuth(db: D1Database, secret: string, trustedOrigins?: string[]) {
+export function createAuth(db: D1Database, secret: string, baseURL: string, trustedOrigins?: string[]) {
   const drizzleDb = createDb(db);
 
   return betterAuth({
+    baseURL,
     database: drizzleAdapter(drizzleDb, {
       provider: 'sqlite',
       schema: {

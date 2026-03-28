@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 88" fill="none">
+  <!-- Upper triangle: hot pink -->
+  <path d="M44 0L16 48h28z" fill="#FF2D78"/>
+  <!-- Lower triangle: sky blue -->
+  <path d="M16 40h28L16 88z" fill="#4DA6FF"/>
+  <!-- Overlap diamond: dark navy -->
+  <path d="M21 40h23L39 48H16z" fill="#1B1464"/>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 88" fill="none">
+  <!-- Upper triangle -->
+  <path d="M44 0L16 48h28z" fill="#FFFFFF"/>
+  <!-- Lower triangle -->
+  <path d="M16 40h28L16 88z" fill="rgba(255,255,255,0.7)"/>
+  <!-- Overlap diamond -->
+  <path d="M21 40h23L39 48H16z" fill="rgba(255,255,255,0.4)"/>
+</svg>

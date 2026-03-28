@@ -21,7 +21,7 @@ function json(data: unknown, status = 200) {
 
 export const GET: APIRoute = async ({ request, locals }) => {
   const { DB, BETTER_AUTH_SECRET, BETTER_AUTH_URL } = locals.runtime.env;
-  const auth = createAuth(DB, BETTER_AUTH_SECRET, [BETTER_AUTH_URL]);
+  const auth = createAuth(DB, BETTER_AUTH_SECRET, BETTER_AUTH_URL, [BETTER_AUTH_URL]);
   const session = await auth.api.getSession({ headers: request.headers });
 
   if (!session?.user) {
@@ -49,7 +49,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const { DB, BETTER_AUTH_SECRET, BETTER_AUTH_URL } = locals.runtime.env;
-  const auth = createAuth(DB, BETTER_AUTH_SECRET, [BETTER_AUTH_URL]);
+  const auth = createAuth(DB, BETTER_AUTH_SECRET, BETTER_AUTH_URL, [BETTER_AUTH_URL]);
   const session = await auth.api.getSession({ headers: request.headers });
 
   if (!session?.user) {
@@ -90,7 +90,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 export const DELETE: APIRoute = async ({ request, locals }) => {
   const { DB, BETTER_AUTH_SECRET, BETTER_AUTH_URL } = locals.runtime.env;
-  const auth = createAuth(DB, BETTER_AUTH_SECRET, [BETTER_AUTH_URL]);
+  const auth = createAuth(DB, BETTER_AUTH_SECRET, BETTER_AUTH_URL, [BETTER_AUTH_URL]);
   const session = await auth.api.getSession({ headers: request.headers });
 
   if (!session?.user) {

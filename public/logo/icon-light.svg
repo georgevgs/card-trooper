@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Light background with rounded corners -->
+  <rect width="512" height="512" rx="108" fill="#FAFAF5"/>
+  <!-- Bolt centered and scaled -->
+  <g transform="translate(160, 80) scale(3.2)">
+    <path d="M44 0L16 48h28z" fill="#FF2D78"/>
+    <path d="M16 40h28L16 88z" fill="#4DA6FF"/>
+    <path d="M21 40h23L39 48H16z" fill="#1B1464"/>
+  </g>
+</svg>
