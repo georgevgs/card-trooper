@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Lock, X } from 'lucide-react';
+import { ICONS } from '@/lib/icons';
 
 interface WelcomePageProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -21,41 +22,6 @@ function getPasswordStrength(pw: string) {
     { score: s, label: 'Strong', color: 'var(--green)' },
   ][s];
 }
-
-/* ── Tri-color bolt (matches the overlapping-triangle reference) ── */
-const TriBolt: React.FC<{
-  top: string; bottom: string; back: string;
-  size: number; rotation?: number;
-  style?: React.CSSProperties;
-}> = ({ top, bottom, back, size, rotation = -25, style }) => (
-  <svg
-    width={size}
-    height={size * 1.47}
-    viewBox="0 0 60 88"
-    fill="none"
-    style={{ transform: `rotate(${rotation}deg)`, ...style }}
-  >
-    {/* Back layer — visible at edges */}
-    <path d="M42 0L16 44h26z" fill={back} />
-    <path d="M18 44h26L18 88z" fill={back} />
-    {/* Upper triangle */}
-    <path d="M40 2L18 44h22z" fill={top} />
-    {/* Lower triangle */}
-    <path d="M20 44h22L20 86z" fill={bottom} />
-  </svg>
-);
-
-/* ── Bolt compositions — color combos from the reference ── */
-const BOLTS = [
-  { top: '#FF2D78', bottom: '#4DA6FF', back: '#1B1464', x: '-2%',  y: '2%',   s: 78, r: -25 },
-  { top: '#E8FF00', bottom: '#00C9A7', back: '#7B2FF2', x: '26%',  y: '-6%',  s: 70, r: -20 },
-  { top: '#FF6B35', bottom: '#7B2FF2', back: '#00C9A7', x: '54%',  y: '4%',   s: 74, r: -28 },
-  { top: '#4DA6FF', bottom: '#FFA500', back: '#7B2FF2', x: '80%',  y: '-4%',  s: 66, r: -22 },
-  { top: '#00C9A7', bottom: '#FF2D78', back: '#7B2FF2', x: '10%',  y: '46%',  s: 72, r: -30 },
-  { top: '#FFA500', bottom: '#00C9A7', back: '#7B2FF2', x: '40%',  y: '40%',  s: 68, r: -24 },
-  { top: '#FF2D78', bottom: '#1B1464', back: '#4DA6FF', x: '68%',  y: '48%',  s: 70, r: -26 },
-  { top: '#E8FF00', bottom: '#7B2FF2', back: '#FF6B35', x: '92%',  y: '42%',  s: 64, r: -20 },
-];
 
 const Field: React.FC<{
   label: string; type?: string; placeholder: string;
@@ -111,17 +77,18 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col overflow-hidden" style={{ background: 'var(--bg)' }}>
-      {/* Nav */}
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)' }}>
       <nav
-        className="relative z-10 flex justify-between items-center px-5 h-[52px]"
+        className="flex justify-between items-center px-5 h-[52px]"
         style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border-default)' }}
       >
         <div className="flex items-center gap-2">
-          <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
-            <path d="M28 4L12 26h10l-4 18 20-24H26z" fill="var(--brand-pink)" />
+          <svg width="16" height="24" viewBox="0 0 60 88" fill="none" className="shrink-0">
+            <path d="M44 0L16 48h28z" fill="#FF2D78" />
+            <path d="M16 40h28L16 88z" fill="#4DA6FF" />
+            <path d="M21 40h23L39 48H16z" fill="#1B1464" />
           </svg>
-          <span className="text-[15px] font-semibold" style={{ color: 'var(--text-1)' }}>Card Trooper</span>
+          <span className="text-[15px] font-bold tracking-[-0.01em]" style={{ color: 'var(--text-1)' }}>Card Trooper</span>
         </div>
         <button
           onClick={() => openAuth('login')}
@@ -131,63 +98,51 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
         </button>
       </nav>
 
-      <main className="flex-1 flex flex-col">
-        {/* ── Bolt field ── */}
-        <div className="relative w-full overflow-hidden anim-fade-in" style={{ height: 'clamp(220px, 36vh, 340px)' }}>
-          {BOLTS.map((b, i) => (
-            <TriBolt
-              key={i}
-              top={b.top} bottom={b.bottom} back={b.back}
-              size={b.s} rotation={b.r}
-              style={{ position: 'absolute', left: b.x, top: b.y }}
-            />
-          ))}
+      <main className="flex-1 flex flex-col justify-center items-center text-center px-6 py-16">
+        <div className="anim-slide-up">
+          <img src={ICONS.wallet} alt="" className="w-20 h-20 sm:w-24 sm:h-24 object-contain mx-auto mb-6" />
         </div>
 
-        {/* ── Text + CTAs ── */}
-        <div className="flex-1 flex flex-col items-center text-center px-6 pb-8" style={{ marginTop: '-16px' }}>
-          <h1
-            className="text-[38px] sm:text-[52px] font-extrabold leading-[1.05] mb-4 anim-slide-up"
-            style={{ color: 'var(--text-1)', letterSpacing: '-0.03em' }}
+        <h1
+          className="text-[36px] sm:text-[48px] font-bold leading-[1.1] mb-4 anim-slide-up"
+          style={{ color: 'var(--text-1)', letterSpacing: '-0.02em', animationDelay: '50ms' }}
+        >
+          All your cards,<br />
+          <span style={{ color: 'var(--brand-pink)' }}>one place.</span>
+        </h1>
+
+        <p
+          className="text-[15px] leading-relaxed max-w-[280px] mb-10 anim-slide-up"
+          style={{ color: 'var(--text-2)', animationDelay: '100ms' }}
+        >
+          Store every loyalty card and scan instantly at checkout.
+        </p>
+
+        <div className="flex flex-col w-full max-w-[260px] gap-2.5 anim-slide-up" style={{ animationDelay: '150ms' }}>
+          <button
+            onClick={() => openAuth('signup')}
+            className="w-full text-[15px] py-3 rounded-lg btn-primary"
           >
-            All your cards,<br />
-            <span style={{ color: 'var(--brand-pink)' }}>one tap.</span>
-          </h1>
-
-          <p
-            className="text-[15px] leading-relaxed max-w-[280px] mb-10 anim-slide-up"
-            style={{ color: 'var(--text-2)', animationDelay: '50ms' }}
+            Get Started
+          </button>
+          <button
+            onClick={() => openAuth('login')}
+            className="w-full text-[15px] py-3 rounded-lg btn-outline"
           >
-            Store every loyalty card and scan instantly at checkout.
-          </p>
+            Sign In
+          </button>
+        </div>
 
-          <div className="flex flex-col w-full max-w-[260px] gap-2.5 anim-slide-up" style={{ animationDelay: '100ms' }}>
-            <button
-              onClick={() => openAuth('signup')}
-              className="w-full text-[15px] py-3 rounded-lg btn-primary"
-            >
-              Get Started
-            </button>
-            <button
-              onClick={() => openAuth('login')}
-              className="w-full text-[15px] py-3 rounded-lg btn-outline"
-            >
-              Sign In
-            </button>
-          </div>
-
-          <div className="mt-8 flex items-center gap-1.5 text-[12px] anim-slide-up" style={{ color: 'var(--text-3)', animationDelay: '150ms' }}>
-            <Lock className="w-3 h-3" />
-            <span>Secured with HTTP-only cookies</span>
-          </div>
+        <div className="mt-8 flex items-center gap-1.5 text-[12px] anim-slide-up" style={{ color: 'var(--text-3)', animationDelay: '200ms' }}>
+          <Lock className="w-3 h-3" />
+          <span>Secured with HTTP-only cookies</span>
         </div>
       </main>
 
-      <footer className="relative z-10 pb-8 text-center text-[12px]" style={{ color: 'var(--text-3)' }}>
+      <footer className="pb-8 text-center text-[12px]" style={{ color: 'var(--text-3)' }}>
         &copy; 2026 Card Trooper
       </footer>
 
-      {/* ── Auth dialog ── */}
       {isAuthOpen && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"

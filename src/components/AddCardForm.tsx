@@ -9,7 +9,7 @@ type AddCardFormProps = {
   isLoading: boolean;
 };
 
-const BRAND_COLORS = ['#FF2D78', '#4DA6FF', '#00C9A7', '#FF6B35', '#7B2FF2', '#D4A700'];
+const BRAND_COLORS = ['#FF2D78', '#4DA6FF', '#00C9A7', '#FF6B35', '#7B2FF2', '#E8FF00'];
 
 const Row: React.FC<{ label: string; children: React.ReactNode; last?: boolean }> = ({ label, children, last }) => (
   <div className="flex items-center px-4 gap-3" style={{ borderBottom: last ? 'none' : '1px solid var(--border-default)' }}>

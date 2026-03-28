@@ -14,21 +14,27 @@ const StoreCard = ({ card, onCardClick, onDeleteClick }: StoreCardProps) => {
 
   return (
     <div
-      className="rounded-xl overflow-hidden cursor-pointer select-none card-interactive"
+      className="rounded-xl overflow-hidden cursor-pointer select-none card-interactive flex"
       onClick={() => { if (!isMenuOpen) onCardClick(card); }}
     >
-      <div className="h-[3px] w-full" style={{ backgroundColor: card.color }} />
+      {/* Left color bar */}
+      <div className="w-[4px] shrink-0" style={{ backgroundColor: card.color }} />
 
-      <div className="px-3.5 pt-3 pb-3.5">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[14px] font-semibold truncate pr-1 leading-tight" style={{ color: 'var(--text-1)' }}>
-            {card.storeName}
-          </h2>
-          <CardMenu isOpen={isMenuOpen} onOpenChange={setIsMenuOpen} onDeleteClick={onDeleteClick} />
-        </div>
+      <div className="flex-1 min-w-0">
+        <div className="px-3.5 pt-3 pb-3.5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: card.color }} />
+              <h2 className="text-[15px] font-semibold truncate leading-tight" style={{ color: 'var(--text-1)' }}>
+                {card.storeName}
+              </h2>
+            </div>
+            <CardMenu isOpen={isMenuOpen} onOpenChange={setIsMenuOpen} onDeleteClick={onDeleteClick} />
+          </div>
 
-        <div className="rounded-lg p-3" style={{ background: 'var(--bg)' }}>
-          <CardCode card={card} />
+          <div className="rounded-lg p-3" style={{ background: 'var(--bg)' }}>
+            <CardCode card={card} />
+          </div>
         </div>
       </div>
     </div>

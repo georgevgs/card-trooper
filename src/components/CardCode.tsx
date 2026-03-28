@@ -5,39 +5,40 @@ import type { StoreCardType } from '@/types/storecard';
 
 type CardCodeProps = {
   card: StoreCardType;
+  large?: boolean;
 };
 
-const CardCode = ({ card }: CardCodeProps) => {
+const CardCode = ({ card, large }: CardCodeProps) => {
   const barcodeRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     if (!card.isQRCode && barcodeRef.current) {
       JsBarcode(barcodeRef.current, card.cardNumber, {
         format: 'CODE128',
-        width: 1.5,
-        height: 60,
+        width: large ? 2.2 : 1.5,
+        height: large ? 88 : 60,
         displayValue: true,
-        fontSize: 12,
-        marginTop: 6,
-        marginBottom: 6,
+        fontSize: large ? 13 : 12,
+        marginTop: large ? 12 : 6,
+        marginBottom: large ? 12 : 6,
         textMargin: 2,
-        background: 'transparent',
+        background: large ? '#FFFFFF' : 'transparent',
         lineColor: '#111827',
       });
     }
-  }, [card]);
+  }, [card, large]);
 
   if (card.isQRCode) {
     return (
       <div className="flex justify-center items-center py-1">
-        <QRCode value={card.cardNumber} size={100} />
+        <QRCode value={card.cardNumber} size={large ? 220 : 100} />
       </div>
     );
   }
 
   return (
     <div className="flex justify-center items-center w-full">
-      <svg ref={barcodeRef} className="max-w-full"></svg>
+      <svg ref={barcodeRef} className={large ? 'w-full max-w-[280px]' : 'max-w-full'} />
     </div>
   );
 };

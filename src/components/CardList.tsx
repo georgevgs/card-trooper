@@ -11,13 +11,6 @@ type CardListProps = {
   isSearchVisible: boolean;
 };
 
-const EmptyBolt: React.FC = () => (
-  <svg width="56" height="56" viewBox="0 0 48 48" fill="none">
-    <path d="M30 3L10 28h12l-4 17 22-26H27z" fill="var(--brand-blue)" opacity="0.5" />
-    <path d="M28 5L9 29h11l-3 15 20-24H26z" fill="var(--brand-pink)" opacity="0.45" />
-  </svg>
-);
-
 const CardList = ({ cards, onDeleteCard, isSearchVisible }: CardListProps) => {
   const [deleteCardId, setDeleteCardId] = useState<number | null>(null);
   const [fullScreenCard, setFullScreenCard] = useState<StoreCardType | null>(null);
@@ -61,7 +54,11 @@ const CardList = ({ cards, onDeleteCard, isSearchVisible }: CardListProps) => {
       {filteredCards.length === 0 && !isSearchVisible && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="mb-5">
-            <EmptyBolt />
+            <svg width="48" height="70" viewBox="0 0 60 88" fill="none">
+              <path d="M44 0L16 48h28z" fill="#FF2D78" opacity="0.5" />
+              <path d="M16 40h28L16 88z" fill="#4DA6FF" opacity="0.5" />
+              <path d="M21 40h23L39 48H16z" fill="#1B1464" opacity="0.35" />
+            </svg>
           </div>
           <h3 className="text-[20px] font-semibold mb-1.5" style={{ color: 'var(--text-1)' }}>No cards yet</h3>
           <p className="text-[14px] leading-relaxed max-w-[220px]" style={{ color: 'var(--text-2)' }}>
