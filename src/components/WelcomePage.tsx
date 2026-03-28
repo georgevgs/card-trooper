@@ -22,11 +22,40 @@ function getPasswordStrength(pw: string) {
   ][s];
 }
 
-const Bolt: React.FC<{ color: string; size?: number; className?: string; style?: React.CSSProperties }> = ({ color, size = 48, className, style }) => (
-  <svg width={size} height={size} viewBox="0 0 48 48" fill="none" className={className} style={style}>
-    <path d="M28 4L12 26h10l-4 18 20-24H26z" fill={color} />
+/* ── Tri-color bolt (matches the overlapping-triangle reference) ── */
+const TriBolt: React.FC<{
+  top: string; bottom: string; back: string;
+  size: number; rotation?: number;
+  style?: React.CSSProperties;
+}> = ({ top, bottom, back, size, rotation = -25, style }) => (
+  <svg
+    width={size}
+    height={size * 1.47}
+    viewBox="0 0 60 88"
+    fill="none"
+    style={{ transform: `rotate(${rotation}deg)`, ...style }}
+  >
+    {/* Back layer — visible at edges */}
+    <path d="M42 0L16 44h26z" fill={back} />
+    <path d="M18 44h26L18 88z" fill={back} />
+    {/* Upper triangle */}
+    <path d="M40 2L18 44h22z" fill={top} />
+    {/* Lower triangle */}
+    <path d="M20 44h22L20 86z" fill={bottom} />
   </svg>
 );
+
+/* ── Bolt compositions — color combos from the reference ── */
+const BOLTS = [
+  { top: '#FF2D78', bottom: '#4DA6FF', back: '#1B1464', x: '-2%',  y: '2%',   s: 78, r: -25 },
+  { top: '#E8FF00', bottom: '#00C9A7', back: '#7B2FF2', x: '26%',  y: '-6%',  s: 70, r: -20 },
+  { top: '#FF6B35', bottom: '#7B2FF2', back: '#00C9A7', x: '54%',  y: '4%',   s: 74, r: -28 },
+  { top: '#4DA6FF', bottom: '#FFA500', back: '#7B2FF2', x: '80%',  y: '-4%',  s: 66, r: -22 },
+  { top: '#00C9A7', bottom: '#FF2D78', back: '#7B2FF2', x: '10%',  y: '46%',  s: 72, r: -30 },
+  { top: '#FFA500', bottom: '#00C9A7', back: '#7B2FF2', x: '40%',  y: '40%',  s: 68, r: -24 },
+  { top: '#FF2D78', bottom: '#1B1464', back: '#4DA6FF', x: '68%',  y: '48%',  s: 70, r: -26 },
+  { top: '#E8FF00', bottom: '#7B2FF2', back: '#FF6B35', x: '92%',  y: '42%',  s: 64, r: -20 },
+];
 
 const Field: React.FC<{
   label: string; type?: string; placeholder: string;
@@ -83,6 +112,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden" style={{ background: 'var(--bg)' }}>
+      {/* Nav */}
       <nav
         className="relative z-10 flex justify-between items-center px-5 h-[52px]"
         style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border-default)' }}
@@ -101,38 +131,37 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
         </button>
       </nav>
 
-      <main className="relative flex-1 flex flex-col justify-center items-center text-center px-6 py-16">
-        {/* Decorative bolts */}
-        <Bolt color="#4DA6FF" size={72} className="absolute opacity-[0.12]" style={{ top: '8%', left: '6%', transform: 'rotate(-18deg)' }} />
-        <Bolt color="#FF2D78" size={56} className="absolute opacity-[0.10]" style={{ top: '14%', right: '10%', transform: 'rotate(12deg)' }} />
-        <Bolt color="#00C9A7" size={64} className="absolute opacity-[0.10]" style={{ bottom: '18%', left: '8%', transform: 'rotate(-8deg)' }} />
-        <Bolt color="#FF6B35" size={48} className="absolute opacity-[0.08]" style={{ bottom: '12%', right: '6%', transform: 'rotate(22deg)' }} />
-        <Bolt color="#7B2FF2" size={40} className="absolute opacity-[0.08]" style={{ top: '42%', right: '4%', transform: 'rotate(-15deg)' }} />
+      <main className="flex-1 flex flex-col">
+        {/* ── Bolt field ── */}
+        <div className="relative w-full overflow-hidden anim-fade-in" style={{ height: 'clamp(220px, 36vh, 340px)' }}>
+          {BOLTS.map((b, i) => (
+            <TriBolt
+              key={i}
+              top={b.top} bottom={b.bottom} back={b.back}
+              size={b.s} rotation={b.r}
+              style={{ position: 'absolute', left: b.x, top: b.y }}
+            />
+          ))}
+        </div>
 
-        <div className="relative z-10">
-          <div className="anim-slide-up mb-6">
-            <svg width="64" height="64" viewBox="0 0 48 48" fill="none" className="mx-auto">
-              <path d="M30 3L10 28h12l-4 17 22-26H27z" fill="var(--brand-blue)" />
-              <path d="M28 5L9 29h11l-3 15 20-24H26z" fill="var(--brand-pink)" opacity="0.82" />
-            </svg>
-          </div>
-
+        {/* ── Text + CTAs ── */}
+        <div className="flex-1 flex flex-col items-center text-center px-6 pb-8" style={{ marginTop: '-16px' }}>
           <h1
-            className="text-[40px] sm:text-[52px] font-extrabold leading-[1.05] mb-4 anim-slide-up"
-            style={{ color: 'var(--text-1)', letterSpacing: '-0.03em', animationDelay: '50ms' }}
+            className="text-[38px] sm:text-[52px] font-extrabold leading-[1.05] mb-4 anim-slide-up"
+            style={{ color: 'var(--text-1)', letterSpacing: '-0.03em' }}
           >
             All your cards,<br />
             <span style={{ color: 'var(--brand-pink)' }}>one tap.</span>
           </h1>
 
           <p
-            className="text-[15px] leading-relaxed max-w-[280px] mx-auto mb-10 anim-slide-up"
-            style={{ color: 'var(--text-2)', animationDelay: '100ms' }}
+            className="text-[15px] leading-relaxed max-w-[280px] mb-10 anim-slide-up"
+            style={{ color: 'var(--text-2)', animationDelay: '50ms' }}
           >
             Store every loyalty card and scan instantly at checkout.
           </p>
 
-          <div className="flex flex-col w-full max-w-[260px] mx-auto gap-2.5 anim-slide-up" style={{ animationDelay: '150ms' }}>
+          <div className="flex flex-col w-full max-w-[260px] gap-2.5 anim-slide-up" style={{ animationDelay: '100ms' }}>
             <button
               onClick={() => openAuth('signup')}
               className="w-full text-[15px] py-3 rounded-lg btn-primary"
@@ -147,7 +176,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
             </button>
           </div>
 
-          <div className="mt-8 flex items-center justify-center gap-1.5 text-[12px] anim-slide-up" style={{ color: 'var(--text-3)', animationDelay: '200ms' }}>
+          <div className="mt-8 flex items-center gap-1.5 text-[12px] anim-slide-up" style={{ color: 'var(--text-3)', animationDelay: '150ms' }}>
             <Lock className="w-3 h-3" />
             <span>Secured with HTTP-only cookies</span>
           </div>
@@ -158,6 +187,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
         &copy; 2026 Card Trooper
       </footer>
 
+      {/* ── Auth dialog ── */}
       {isAuthOpen && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
