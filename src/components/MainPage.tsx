@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import * as AuthService from '@/services/AuthService';
+import * as OfflineStore from '@/services/OfflineStore';
 import type { StoreCardType } from '@/types/storecard';
 import Header from './Header';
 import CardList from './CardList';
@@ -7,8 +8,6 @@ import OfflineAlert from './OfflineAlert';
 import Footer from './Footer';
 import LoadingScreen from './LoadingScreen';
 import AddCardDialog from './AddCardDialog';
-
-const CACHE_KEY = 'cardTrooperCards';
 
 interface MainPageProps {
   onLogout: () => Promise<void>;
@@ -21,6 +20,7 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const isSyncing = useRef(false);
 
   useEffect(() => {
     const on = () => setIsOffline(false);
@@ -32,38 +32,76 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
 
   useEffect(() => { loadCards(); }, []);
 
+  // Sync pending operations when coming back online
   useEffect(() => {
-    if (isOffline) return;
-    const syncOfflineCards = async () => {
-      const offlineCards = cards.filter(c => c.isOffline);
-      if (offlineCards.length === 0) return;
-      for (const card of offlineCards) {
-        try {
-          const { storeName, cardNumber, color, isQRCode } = card;
-          const synced = await AuthService.addCard({ storeName, cardNumber, color, isQRCode });
-          setCards(prev => { const u = prev.map(c => c.id === card.id ? synced : c); saveCardsToCache(u); return u; });
-        } catch (e) { console.error('Failed to sync offline card:', e); }
-      }
-    };
-    syncOfflineCards();
+    if (!isOffline) {
+      syncPendingOps();
+    }
   }, [isOffline]);
 
-  const loadCardsFromCache = (): StoreCardType[] => {
-    try { const c = localStorage.getItem(CACHE_KEY); return c ? JSON.parse(c) : []; }
-    catch { return []; }
-  };
+  const syncPendingOps = useCallback(async () => {
+    if (isSyncing.current) return;
+    isSyncing.current = true;
 
-  const saveCardsToCache = (c: StoreCardType[]) => {
-    try { localStorage.setItem(CACHE_KEY, JSON.stringify(c)); } catch {}
-  };
+    try {
+      const ops = await OfflineStore.getPendingOps();
+      if (ops.length === 0) return;
+
+      for (const op of ops) {
+        try {
+          if (op.type === 'add') {
+            const data = op.payload as Omit<StoreCardType, 'id'>;
+            const synced = await AuthService.addCard(data);
+
+            // Replace the temp offline card with the synced one in IndexedDB and state
+            setCards(prev => {
+              const updated = prev.map(c =>
+                c.isOffline && c.storeName === data.storeName && c.cardNumber === data.cardNumber
+                  ? synced
+                  : c
+              );
+              OfflineStore.setCachedCards(updated);
+              return updated;
+            });
+          } else if (op.type === 'delete') {
+            const cardId = op.payload as number;
+            await AuthService.deleteCard(cardId);
+          }
+
+          await OfflineStore.removePendingOp(op.id);
+        } catch (e) {
+          console.error(`Failed to sync ${op.type} operation:`, e);
+          // Leave the op in the queue for next retry
+          break;
+        }
+      }
+    } finally {
+      isSyncing.current = false;
+    }
+  }, []);
 
   const loadCards = async () => {
     setIsLoadingCards(true);
-    setCards(loadCardsFromCache());
+
+    // Migrate from localStorage on first run
+    await OfflineStore.migrateFromLocalStorage();
+
+    // Load cached cards from IndexedDB immediately
+    const cached = await OfflineStore.getCachedCards();
+    setCards(cached);
+
+    // If online, fetch fresh data from server
     if (navigator.onLine) {
-      try { const f = await AuthService.fetchCards(); setCards(f); saveCardsToCache(f); }
-      catch (e) { console.error('Failed to fetch cards:', e); }
+      try {
+        const fresh = await AuthService.fetchCards();
+        setCards(fresh);
+        await OfflineStore.setCachedCards(fresh);
+      } catch (e) {
+        console.error('Failed to fetch cards:', e);
+        // Fall back to cached data (already set above)
+      }
     }
+
     setIsLoadingCards(false);
   };
 
@@ -72,21 +110,36 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     try {
       if (navigator.onLine) {
         const added = await AuthService.addCard(data);
-        setCards(prev => { const u = [...prev, added]; saveCardsToCache(u); return u; });
+        setCards(prev => [...prev, added]);
+        await OfflineStore.addCachedCard(added);
       } else {
-        const offline = { ...data, id: Date.now(), isOffline: true };
-        setCards(prev => { const u = [...prev, offline]; saveCardsToCache(u); return u; });
+        const offlineCard: StoreCardType = { ...data, id: Date.now(), isOffline: true };
+        setCards(prev => [...prev, offlineCard]);
+        await OfflineStore.addCachedCard(offlineCard);
+        await OfflineStore.queueOp('add', data);
       }
       setIsAddCardOpen(false);
-    } catch (e) { console.error('Failed to add card:', e); }
-    finally { setIsAddingCard(false); }
+    } catch (e) {
+      console.error('Failed to add card:', e);
+    } finally {
+      setIsAddingCard(false);
+    }
   };
 
   const handleDeleteCard = async (id: number) => {
+    // Remove from UI and cache immediately
+    setCards(prev => prev.filter(c => c.id !== id));
+    await OfflineStore.removeCachedCard(id);
+
     try {
-      if (navigator.onLine) await AuthService.deleteCard(id);
-      setCards(prev => { const u = prev.filter(c => c.id !== id); saveCardsToCache(u); return u; });
-    } catch (e) { console.error('Failed to delete card:', e); }
+      if (navigator.onLine) {
+        await AuthService.deleteCard(id);
+      } else {
+        await OfflineStore.queueOp('delete', id);
+      }
+    } catch (e) {
+      console.error('Failed to delete card:', e);
+    }
   };
 
   return (
