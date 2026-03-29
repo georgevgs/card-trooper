@@ -22,6 +22,15 @@ export function createAuth(db: D1Database, secret: string, baseURL: string, trus
     emailAndPassword: {
       enabled: true,
     },
+    advanced: {
+      cookiePrefix: 'card-trooper',
+      defaultCookieAttributes: {
+        sameSite: 'lax',
+        secure: true,
+        path: '/',
+        httpOnly: true,
+      },
+    },
     session: {
       cookieCache: {
         enabled: true,
