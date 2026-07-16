@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" fill="none">
   <!-- Bolt mark -->
   <g transform="translate(0, 2) scale(0.86)">
-    <path d="M44 0L16 48h28z" fill="#FF2D78"/>
-    <path d="M16 40h28L16 88z" fill="#4DA6FF"/>
-    <path d="M21 40h23L39 48H16z" fill="#1B1464"/>
+    <path d="M44 0L16 48h28z" fill="#F0553D"/>
+    <path d="M16 40h28L16 88z" fill="#8B5E3C"/>
+    <path d="M21 40h23L39 48H16z" fill="#262322"/>
   </g>
-  <!-- Wordmark: "Card Trooper" in Outfit Bold -->
-  <text x="58" y="50" font-family="Outfit, -apple-system, sans-serif" font-weight="700" font-size="30" letter-spacing="-0.5" fill="#111827">Card Trooper</text>
+  <!-- Wordmark: "Card Trooper" in Manrope ExtraBold -->
+  <text x="58" y="50" font-family="Manrope, -apple-system, sans-serif" font-weight="800" font-size="30" letter-spacing="-0.5" fill="#262322">Card Trooper</text>
 </svg>

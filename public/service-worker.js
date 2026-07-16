@@ -1,5 +1,5 @@
-const CACHE_NAME = 'card-trooper-cache-v5';
-const DYNAMIC_CACHE_NAME = 'card-trooper-dynamic-cache-v5';
+const CACHE_NAME = 'card-trooper-cache-v6';
+const DYNAMIC_CACHE_NAME = 'card-trooper-dynamic-cache-v6';
 
 const urlsToCache = [
   '/',

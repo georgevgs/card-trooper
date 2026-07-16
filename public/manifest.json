@@ -7,9 +7,12 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FAFAF5",
-  "theme_color": "#FAFAF5",
-  "categories": ["productivity", "utilities"],
+  "background_color": "#FBF9F6",
+  "theme_color": "#FBF9F6",
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "/favicon/android-chrome-192x192.png",

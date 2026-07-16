@@ -19,8 +19,8 @@ const DeleteCardDialog = ({ isOpen, onClose, onConfirm }: DeleteCardDialogProps)
           <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: '#FEF2F2' }}>
             <AlertTriangle className="w-5 h-5" style={{ color: 'var(--red)' }} />
           </div>
-          <h3 className="text-[17px] font-semibold mb-1.5" style={{ color: 'var(--text-1)' }}>Delete card?</h3>
-          <p className="text-[13px] leading-snug" style={{ color: 'var(--text-2)' }}>This can't be undone.</p>
+          <h3 className="text-[17px] font-extrabold mb-1.5" style={{ color: 'var(--text-1)' }}>Delete card?</h3>
+          <p className="text-[13px] font-medium leading-snug" style={{ color: 'var(--text-2)' }}>This can't be undone.</p>
         </div>
 
         <div className="flex" style={{ borderTop: '1px solid var(--border-default)' }}>

@@ -9,7 +9,7 @@ type AddCardFormProps = {
   isLoading: boolean;
 };
 
-const BRAND_COLORS = ['#FF2D78', '#4DA6FF', '#00C9A7', '#FF6B35', '#7B2FF2', '#E8FF00'];
+const BRAND_COLORS = ['#F0553D', '#8B5E3C', '#D8607C', '#4C8B5B', '#3E4C8C', '#2E8B8B'];
 
 const Row: React.FC<{ label: string; children: React.ReactNode; last?: boolean }> = ({ label, children, last }) => (
   <div className="flex items-center px-4 gap-3" style={{ borderBottom: last ? 'none' : '1px solid var(--border-default)' }}>
@@ -20,7 +20,7 @@ const Row: React.FC<{ label: string; children: React.ReactNode; last?: boolean }
 
 const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
   const [form, setForm] = useState<Omit<StoreCardType, 'id'>>({
-    storeName: '', cardNumber: '', color: '#FF2D78', isQRCode: false,
+    storeName: '', cardNumber: '', color: '#F0553D', isQRCode: false,
   });
 
   const set = (k: keyof typeof form, v: string | boolean) => setForm(prev => ({ ...prev, [k]: v }));
@@ -66,7 +66,7 @@ const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
               <input type="color" value={form.color} onChange={e => set('color', e.target.value)}
                 disabled={isLoading} aria-label="Custom color" className="w-7 h-7 rounded-md cursor-pointer border-0 p-0.5 bg-transparent" />
               <input type="text" value={form.color} onChange={e => set('color', e.target.value)}
-                pattern="^#[0-9A-Fa-f]{6}$" placeholder="#FF2D78" maxLength={7} disabled={isLoading}
+                pattern="^#[0-9A-Fa-f]{6}$" placeholder="#F0553D" maxLength={7} disabled={isLoading}
                 className="w-[72px] text-right bg-transparent outline-none uppercase font-mono text-[12px]" style={{ color: 'var(--text-2)' }} />
             </div>
           </div>
@@ -85,7 +85,7 @@ const AddCardForm = ({ onAddCard, onClose, isLoading }: AddCardFormProps) => {
           <button type="button" role="switch" aria-checked={form.isQRCode} disabled={isLoading}
             onClick={() => set('isQRCode', !form.isQRCode)}
             className="relative inline-flex h-[24px] w-[44px] items-center rounded-full transition-colors duration-200 disabled:opacity-40"
-            style={{ background: form.isQRCode ? 'var(--brand-pink)' : 'var(--border-strong)' }}>
+            style={{ background: form.isQRCode ? 'var(--accent)' : 'var(--border-strong)' }}>
             <span className="inline-block h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-transform duration-200"
               style={{ transform: form.isQRCode ? 'translateX(23px)' : 'translateX(3px)' }} />
           </button>

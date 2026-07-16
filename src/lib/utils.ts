@@ -15,5 +15,12 @@ export function contrastTextColor(hex: string): string {
   const b = n & 0xff;
   // YIQ perceived brightness
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 128 ? '#111827' : '#FFFFFF';
+  return yiq >= 128 ? '#262322' : '#FFFFFF';
+}
+
+/** Translucent overlay that reads on the given background: white on dark colors, black on light ones. */
+export function surfaceOverlay(hex: string, alpha: number): string {
+  return contrastTextColor(hex) === '#FFFFFF'
+    ? `rgba(255,255,255,${alpha})`
+    : `rgba(0,0,0,${alpha * 0.55})`;
 }

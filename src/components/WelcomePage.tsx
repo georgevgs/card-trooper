@@ -17,7 +17,7 @@ function getPasswordStrength(pw: string) {
   return [
     { score: s, label: 'Weak', color: 'var(--red)' },
     { score: s, label: 'Fair', color: 'var(--amber)' },
-    { score: s, label: 'Good', color: 'var(--brand-pink)' },
+    { score: s, label: 'Good', color: 'var(--accent)' },
     { score: s, label: 'Strong', color: 'var(--green)' },
     { score: s, label: 'Strong', color: 'var(--green)' },
   ][s];
@@ -78,17 +78,14 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)' }}>
-      <nav
-        className="flex justify-between items-center px-5 h-[52px]"
-        style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border-default)' }}
-      >
+      <nav className="flex justify-between items-center px-5 h-[56px] pt-safe">
         <div className="flex items-center gap-2">
           <svg width="16" height="24" viewBox="0 0 60 88" fill="none" className="shrink-0">
-            <path d="M44 0L16 48h28z" fill="#FF2D78" />
-            <path d="M16 40h28L16 88z" fill="#4DA6FF" />
-            <path d="M21 40h23L39 48H16z" fill="#1B1464" />
+            <path d="M44 0L16 48h28z" fill="#F0553D" />
+            <path d="M16 40h28L16 88z" fill="#8B5E3C" />
+            <path d="M21 40h23L39 48H16z" fill="#262322" />
           </svg>
-          <span className="text-[15px] font-bold tracking-[-0.01em]" style={{ color: 'var(--text-1)' }}>Card Trooper</span>
+          <span className="text-[15px] font-extrabold tracking-[-0.01em]" style={{ color: 'var(--text-1)' }}>Card Trooper</span>
         </div>
         <button
           onClick={() => openAuth('login')}
@@ -104,11 +101,11 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
         </div>
 
         <h1
-          className="text-[36px] sm:text-[48px] font-bold leading-[1.1] mb-4 anim-slide-up"
+          className="text-[36px] sm:text-[48px] font-extrabold leading-[1.1] mb-4 anim-slide-up"
           style={{ color: 'var(--text-1)', letterSpacing: '-0.02em', animationDelay: '50ms' }}
         >
           All your cards,<br />
-          <span style={{ color: 'var(--brand-pink)' }}>one place.</span>
+          <span style={{ color: 'var(--accent)' }}>one place.</span>
         </h1>
 
         <p
@@ -151,37 +148,33 @@ const WelcomePage: React.FC<WelcomePageProps> = ({ onLogin, onRegister }) => {
           <div className="absolute inset-0 overlay anim-fade-in" onClick={() => setIsAuthOpen(false)} />
 
           <div
-            className="relative w-full sm:max-w-[380px] rounded-t-2xl sm:rounded-xl z-10 overflow-hidden anim-slide-up"
+            className="relative w-full sm:max-w-[380px] rounded-t-[28px] sm:rounded-xl z-10 overflow-hidden anim-slide-up"
             style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-overlay)' }}
           >
             <div className="flex justify-center pt-3 sm:hidden">
               <div className="w-8 h-1 rounded-full" style={{ background: 'var(--border-strong)' }} />
             </div>
 
-            <div className="flex items-center justify-between px-5 pt-4 pb-3" style={{ borderBottom: '1px solid var(--border-default)' }}>
-              <h2 className="text-[18px] font-semibold" style={{ color: 'var(--text-1)' }}>
+            <div className="flex items-center justify-between px-5 pt-4 pb-3">
+              <h2 className="text-[20px] font-extrabold tracking-[-0.02em]" style={{ color: 'var(--text-1)' }}>
                 {activeTab === 'login' ? 'Sign in' : 'Create account'}
               </h2>
               <button
                 onClick={() => setIsAuthOpen(false)}
-                className="w-7 h-7 rounded-full flex items-center justify-center btn-ghost"
-                style={{ color: 'var(--text-3)' }}
+                className="w-9 h-9 rounded-full flex items-center justify-center"
+                style={{ background: 'var(--surface-2)', color: 'var(--text-1)' }}
+                aria-label="Close"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-[18px] h-[18px]" strokeWidth={2.4} />
               </button>
             </div>
 
-            <div className="mx-4 mt-3 mb-4 p-0.5 flex rounded-lg" style={{ background: 'var(--surface-hover)' }}>
+            <div className="mx-4 mt-2 mb-4 seg-track">
               {(['login', 'signup'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => { setActiveTab(tab); setError(''); }}
-                  className="flex-1 py-1.5 rounded-md text-[13px] font-medium transition-all"
-                  style={
-                    activeTab === tab
-                      ? { background: 'var(--surface)', color: 'var(--text-1)', boxShadow: 'var(--shadow-xs)' }
-                      : { color: 'var(--text-3)' }
-                  }
+                  className={`seg-tab ${activeTab === tab ? 'seg-tab-active' : ''}`}
                 >
                   {tab === 'login' ? 'Sign In' : 'Sign Up'}
                 </button>

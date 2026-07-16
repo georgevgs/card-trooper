@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Plus } from 'lucide-react';
 import * as AuthService from '@/services/AuthService';
 import * as OfflineStore from '@/services/OfflineStore';
 import type { StoreCardType } from '@/types/storecard';
@@ -19,7 +20,6 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   const [isLoadingCards, setIsLoadingCards] = useState(true);
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
-  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const isSyncing = useRef(false);
   const wasOffline = useRef(isOffline);
 
@@ -160,16 +160,26 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)' }}>
-      <Header onAddCard={() => setIsAddCardOpen(true)} onLogout={onLogout} onToggleSearch={() => setIsSearchVisible(v => !v)} isAddingCard={isAddingCard} />
-      <main className="max-w-5xl mx-auto px-4 pt-6 pb-4 sm:px-6 flex-1 w-full">
+      <main className="max-w-5xl mx-auto px-5 sm:px-6 pb-4 flex-1 w-full pt-safe">
+        <div className="pt-7">
+          <Header cardCount={cards.length} onLogout={onLogout} />
+        </div>
         {isLoadingCards ? <LoadingScreen /> : (
-          <>
+          <div className="mt-5">
             <OfflineAlert isOffline={isOffline} />
-            <CardList cards={cards} onDeleteCard={handleDeleteCard} isSearchVisible={isSearchVisible} />
-          </>
+            <CardList cards={cards} onDeleteCard={handleDeleteCard} />
+          </div>
         )}
       </main>
       <Footer />
+      <button
+        className="fab"
+        onClick={() => setIsAddCardOpen(true)}
+        disabled={isAddingCard}
+        aria-label="Add card"
+      >
+        <Plus className="w-7 h-7" strokeWidth={2.2} />
+      </button>
       <AddCardDialog isOpen={isAddCardOpen} onOpenChange={setIsAddCardOpen} onAddCard={handleAddCard} isLoading={isAddingCard} />
     </div>
   );
