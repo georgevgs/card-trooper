@@ -4,7 +4,7 @@ import type { StoreCardType } from '@/types/storecard';
 import { ICONS } from '@/lib/icons';
 
 type AddCardFormProps = {
-  onAddCard: (card: Omit<StoreCardType, 'id'>) => void;
+  onAddCard: (card: Omit<StoreCardType, 'id'>) => Promise<void>;
   onClose: () => void;
   isLoading: boolean;
 };

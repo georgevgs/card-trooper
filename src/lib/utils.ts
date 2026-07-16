@@ -1,10 +1,3 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
-
 /** Pick a readable text color (dark or white) for an arbitrary hex background. */
 export function contrastTextColor(hex: string): string {
   const match = /^#?([0-9a-fA-F]{6})$/.exec(hex);

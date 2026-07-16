@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import WelcomePage from '@/components/WelcomePage';
 import MainPage from '@/components/MainPage';
@@ -6,44 +6,44 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 
 const App: React.FC = () => {
   const { isAuthenticated, isLoading, handleLogin, handleRegister, handleLogout } = useAuth();
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
   const [showReload, setShowReload] = useState(false);
+  const userAcceptedUpdate = useRef(false);
 
   useEffect(() => {
-    if (!isLoading) {
-      const t = setTimeout(() => setIsInitialLoad(false), 100);
-      return () => clearTimeout(t);
-    }
-  }, [isLoading]);
+    if (!('serviceWorker' in navigator)) return;
 
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js').then(reg => {
-        reg.addEventListener('updatefound', () => {
-          const nw = reg.installing;
-          nw?.addEventListener('statechange', () => {
-            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-              setWaitingWorker(nw);
-              setShowReload(true);
-            }
-          });
+    navigator.serviceWorker.register('/service-worker.js').then(reg => {
+      // An update finished downloading in a previous visit and is still waiting
+      if (reg.waiting && navigator.serviceWorker.controller) {
+        setWaitingWorker(reg.waiting);
+        setShowReload(true);
+      }
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        nw?.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            setWaitingWorker(nw);
+            setShowReload(true);
+          }
         });
-      }).catch(e => console.error('SW registration failed:', e));
-
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) { window.location.reload(); refreshing = true; }
       });
-    }
+    }).catch(e => console.error('SW registration failed:', e));
+
+    // clients.claim() also fires this on first install — only reload when the
+    // user explicitly accepted an update via the banner.
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (userAcceptedUpdate.current) window.location.reload();
+    });
   }, []);
 
   const reloadPage = () => {
+    userAcceptedUpdate.current = true;
     waitingWorker?.postMessage({ type: 'SKIP_WAITING' });
     setShowReload(false);
   };
 
-  if (isInitialLoad || isLoading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen" style={{ background: 'var(--bg)' }}>
         <LoadingSpinner />

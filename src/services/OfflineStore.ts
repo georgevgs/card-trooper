@@ -6,7 +6,7 @@ const DB_VERSION = 1;
 const CARDS_STORE = 'cards';
 const PENDING_OPS_STORE = 'pendingOps';
 
-interface PendingOp {
+export interface PendingOp {
   id: number;
   type: 'add' | 'delete';
   payload: Omit<StoreCardType, 'id'> | number; // card data for add, card id for delete
@@ -60,19 +60,16 @@ export async function removeCachedCard(id: number): Promise<void> {
 
 // --- Pending Operations Queue ---
 
-export async function queueOp(type: PendingOp['type'], payload: PendingOp['payload']): Promise<void> {
+/** Queue an operation for retry and return its queue id. */
+export async function queueOp(type: PendingOp['type'], payload: PendingOp['payload']): Promise<number> {
   const db = await getDB();
-  await db.add(PENDING_OPS_STORE, { type, payload, createdAt: Date.now() });
+  const key = await db.add(PENDING_OPS_STORE, { type, payload, createdAt: Date.now() });
+  return Number(key);
 }
 
 export async function getPendingOps(): Promise<PendingOp[]> {
   const db = await getDB();
   return db.getAll(PENDING_OPS_STORE);
-}
-
-export async function clearPendingOps(): Promise<void> {
-  const db = await getDB();
-  await db.clear(PENDING_OPS_STORE);
 }
 
 export async function removePendingOp(id: number): Promise<void> {

@@ -34,7 +34,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     const result = rows.map((card) => ({
       id: card.id,
-      userId: card.userId,
       storeName: card.storeName,
       cardNumber: card.cardNumber,
       color: card.color,

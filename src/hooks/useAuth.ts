@@ -10,6 +10,14 @@ export const useAuth = () => {
   useEffect(() => {
     const wasAuthed = !!localStorage.getItem(WAS_AUTHENTICATED_KEY);
 
+    // Optimistic startup: if this device was signed in last time, show the
+    // wallet immediately (cards render from cache) and verify the session in
+    // the background. The API still gates every request server-side.
+    if (wasAuthed) {
+      setIsAuthenticated(true);
+      setIsLoading(false);
+    }
+
     authClient.getSession().then(({ data, error }) => {
       if (data?.session) {
         setIsAuthenticated(true);
@@ -34,12 +42,14 @@ export const useAuth = () => {
   const handleLogin = async (email: string, password: string) => {
     const { error } = await authClient.signIn.email({ email, password });
     if (error) throw new Error(error.message ?? 'Login failed');
+    localStorage.setItem(WAS_AUTHENTICATED_KEY, '1');
     setIsAuthenticated(true);
   };
 
   const handleRegister = async (username: string, email: string, password: string) => {
     const { error } = await authClient.signUp.email({ email, password, name: username });
     if (error) throw new Error(error.message ?? 'Registration failed');
+    localStorage.setItem(WAS_AUTHENTICATED_KEY, '1');
     setIsAuthenticated(true);
   };
 
