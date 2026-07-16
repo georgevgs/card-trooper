@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { authClient } from '@/lib/auth-client';
-import { getCachedCards } from '@/services/OfflineStore';
 
 const WAS_AUTHENTICATED_KEY = 'cardTrooperWasAuth';
 
@@ -9,23 +8,25 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    authClient.getSession().then(({ data }) => {
-      const authed = !!data?.session;
-      setIsAuthenticated(authed);
-      if (authed) localStorage.setItem(WAS_AUTHENTICATED_KEY, '1');
-      else localStorage.removeItem(WAS_AUTHENTICATED_KEY);
-      setIsLoading(false);
-    }).catch(async () => {
-      // Network failed (offline) — check if user was previously authenticated
-      if (!navigator.onLine && localStorage.getItem(WAS_AUTHENTICATED_KEY)) {
-        const cached = await getCachedCards();
-        if (cached.length > 0) {
-          setIsAuthenticated(true);
-          setIsLoading(false);
-          return;
-        }
+    const wasAuthed = !!localStorage.getItem(WAS_AUTHENTICATED_KEY);
+
+    authClient.getSession().then(({ data, error }) => {
+      if (data?.session) {
+        setIsAuthenticated(true);
+        localStorage.setItem(WAS_AUTHENTICATED_KEY, '1');
+      } else if (!error) {
+        // Server definitively said there is no session
+        setIsAuthenticated(false);
+        localStorage.removeItem(WAS_AUTHENTICATED_KEY);
+      } else {
+        // Network or server error (offline, flaky signal, captive portal, 5xx) —
+        // trust the last known auth state so cards stay reachable at checkout
+        setIsAuthenticated(wasAuthed);
       }
-      setIsAuthenticated(false);
+      setIsLoading(false);
+    }).catch(() => {
+      // Request never reached the server — same fallback
+      setIsAuthenticated(wasAuthed);
       setIsLoading(false);
     });
   }, []);

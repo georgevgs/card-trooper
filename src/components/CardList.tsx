@@ -75,16 +75,32 @@ const CardList = ({ cards, onDeleteCard, isSearchVisible }: CardListProps) => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {filteredCards.map(card => (
           <div key={card.id} className="card-item">
-            <StoreCard card={card} onCardClick={setFullScreenCard} onDeleteClick={() => setDeleteCardId(card.id)} />
+            <StoreCard card={card} onCardClick={setFullScreenCard} />
           </div>
         ))}
       </div>
 
-      <DeleteCardDialog isOpen={deleteCardId !== null} onClose={() => setDeleteCardId(null)} onConfirm={() => { if (deleteCardId) { onDeleteCard(deleteCardId); setDeleteCardId(null); } }} />
-      {fullScreenCard && <FullScreenCard card={fullScreenCard} onClose={() => setFullScreenCard(null)} />}
+      {fullScreenCard && (
+        <FullScreenCard
+          card={fullScreenCard}
+          onClose={() => setFullScreenCard(null)}
+          onDelete={() => setDeleteCardId(fullScreenCard.id)}
+        />
+      )}
+      <DeleteCardDialog
+        isOpen={deleteCardId !== null}
+        onClose={() => setDeleteCardId(null)}
+        onConfirm={() => {
+          if (deleteCardId) {
+            onDeleteCard(deleteCardId);
+            if (fullScreenCard?.id === deleteCardId) setFullScreenCard(null);
+            setDeleteCardId(null);
+          }
+        }}
+      />
     </>
   );
 };

@@ -19,7 +19,7 @@ const BrandBolt: React.FC<{ size?: number }> = ({ size = 20 }) => (
 );
 
 const Header: React.FC<HeaderProps> = ({ onAddCard, onLogout, onToggleSearch, isAddingCard }) => (
-  <header className="sticky top-0 z-20" style={{ background: 'var(--surface)' }}>
+  <header className="sticky top-0 z-20 pt-safe" style={{ background: 'var(--surface)' }}>
     {/* Brand accent strip */}
     <div className="h-[3px] w-full" style={{ background: 'linear-gradient(90deg, #FF2D78 0%, #FF6B35 25%, #E8FF00 50%, #00C9A7 75%, #4DA6FF 100%)' }} />
 

@@ -21,6 +21,7 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const isSyncing = useRef(false);
+  const wasOffline = useRef(isOffline);
 
   useEffect(() => {
     const on = () => setIsOffline(false);
@@ -32,11 +33,14 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
 
   useEffect(() => { loadCards(); }, []);
 
-  // Sync pending operations when coming back online
+  // Sync pending operations when the connection is restored.
+  // Transition-only: the on-mount sync is handled inside loadCards, before the
+  // server fetch, so a queued add can't be clobbered by a stale fetch result.
   useEffect(() => {
-    if (!isOffline) {
+    if (wasOffline.current && !isOffline) {
       syncPendingOps();
     }
+    wasOffline.current = isOffline;
   }, [isOffline]);
 
   const syncPendingOps = useCallback(async () => {
@@ -86,13 +90,18 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     // Migrate from localStorage on first run
     await OfflineStore.migrateFromLocalStorage();
 
-    // Load cached cards from IndexedDB immediately
+    // Show cached cards immediately — the server fetch below runs in the
+    // background so a slow connection never blocks the checkout moment.
     const cached = await OfflineStore.getCachedCards();
-    setCards(cached);
+    if (cached.length > 0) {
+      setCards(cached);
+      setIsLoadingCards(false);
+    }
 
-    // If online, fetch fresh data from server
     if (navigator.onLine) {
       try {
+        // Flush queued offline ops before fetching, so the fetch reflects them
+        await syncPendingOps();
         const fresh = await AuthService.fetchCards();
         setCards(fresh);
         await OfflineStore.setCachedCards(fresh);
@@ -109,18 +118,22 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     setIsAddingCard(true);
     try {
       if (navigator.onLine) {
-        const added = await AuthService.addCard(data);
-        setCards(prev => [...prev, added]);
-        await OfflineStore.addCachedCard(added);
-      } else {
-        const offlineCard: StoreCardType = { ...data, id: Date.now(), isOffline: true };
-        setCards(prev => [...prev, offlineCard]);
-        await OfflineStore.addCachedCard(offlineCard);
-        await OfflineStore.queueOp('add', data);
+        try {
+          const added = await AuthService.addCard(data);
+          setCards(prev => [...prev, added]);
+          await OfflineStore.addCachedCard(added);
+          setIsAddCardOpen(false);
+          return;
+        } catch (e) {
+          console.error('Failed to add card, saving locally for retry:', e);
+        }
       }
+      // Offline, or the server call failed — keep the card locally and queue it
+      const offlineCard: StoreCardType = { ...data, id: Date.now(), isOffline: true };
+      setCards(prev => [...prev, offlineCard]);
+      await OfflineStore.addCachedCard(offlineCard);
+      await OfflineStore.queueOp('add', data);
       setIsAddCardOpen(false);
-    } catch (e) {
-      console.error('Failed to add card:', e);
     } finally {
       setIsAddingCard(false);
     }
@@ -131,14 +144,17 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     setCards(prev => prev.filter(c => c.id !== id));
     await OfflineStore.removeCachedCard(id);
 
+    if (!navigator.onLine) {
+      await OfflineStore.queueOp('delete', id);
+      return;
+    }
+
     try {
-      if (navigator.onLine) {
-        await AuthService.deleteCard(id);
-      } else {
-        await OfflineStore.queueOp('delete', id);
-      }
+      await AuthService.deleteCard(id);
     } catch (e) {
-      console.error('Failed to delete card:', e);
+      // Server call failed — queue so the card doesn't resurrect on next sync
+      console.error('Failed to delete card, queued for retry:', e);
+      await OfflineStore.queueOp('delete', id);
     }
   };
 

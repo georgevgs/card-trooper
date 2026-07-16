@@ -1,16 +1,47 @@
 import React, { useEffect } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Trash2 } from 'lucide-react';
 import CardCode from './CardCode';
 
 type FullScreenCardProps = {
   card: { id: number; storeName: string; cardNumber: string; color: string; isQRCode: boolean };
   onClose: () => void;
+  onDelete: () => void;
 };
 
-const FullScreenCard: React.FC<FullScreenCardProps> = ({ card, onClose }) => {
+const FullScreenCard: React.FC<FullScreenCardProps> = ({ card, onClose, onDelete }) => {
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  // Keep the screen awake while the code is shown — the OS releases the lock
+  // when the tab is hidden, so re-acquire it on return.
+  useEffect(() => {
+    if (!('wakeLock' in navigator)) return;
+
+    let wakeLock: WakeLockSentinel | null = null;
+    let active = true;
+
+    const acquire = async () => {
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        if (!active) await wakeLock.release();
+      } catch {
+        // Denied or unsupported — not critical
+      }
+    };
+
+    acquire();
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') acquire();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      active = false;
+      document.removeEventListener('visibilitychange', onVisibility);
+      wakeLock?.release().catch(() => {});
+    };
   }, []);
 
   return (
@@ -32,7 +63,14 @@ const FullScreenCard: React.FC<FullScreenCardProps> = ({ card, onClose }) => {
           <span className="text-[15px] font-semibold absolute left-1/2 -translate-x-1/2" style={{ color: 'var(--text-1)' }}>
             {card.storeName}
           </span>
-          <div className="w-16" />
+          <button
+            onClick={onDelete}
+            className="w-9 h-9 flex items-center justify-center rounded-lg btn-ghost"
+            style={{ color: 'var(--red)' }}
+            aria-label="Delete card"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
